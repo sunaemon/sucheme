@@ -1,0 +1,3 @@
+[submodule "src/named_variant"]
+	path = src/named_variant
+	url = https://gist.github.com/4054177.git
