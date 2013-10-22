@@ -1,3 +1,4 @@
+AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ([2.68])
 AC_INIT([sunaemon_scheme], [0.1.0], [@sunaemon0])
 AC_CONFIG_AUX_DIR([config])

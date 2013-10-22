@@ -41,3 +41,7 @@ using LispVal = nv::make_recursive_named_variant<
 //    VectorData, std::vector<nv::recursive_named_variant_>,
 //    PortData, port,
 //    ProcedureData, procedure,
+
+using PResult = std::tuple<LispVal, int>;
+
+PResult PNumber(const std::string &s, int p = 0);
