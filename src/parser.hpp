@@ -3,6 +3,7 @@
 #include "named_variant/named_variant.hpp"
 #include <vector>
 #include <tuple>
+#include <list>
 
 namespace nv = named_variants;
 
@@ -11,10 +12,11 @@ struct StringData {};
 struct CharData {};
 struct VectorData {};
 struct PairData {};
-struct SybmolData {};
+struct SymbolData {};
 struct PortData {};
 struct ProcedureData {};
 struct NumberData {};
+struct ListData {};
 
 // data value = BoolData bool
 //            | StringData String
@@ -28,20 +30,23 @@ struct number {
 };
 
 using LispVal = nv::make_recursive_named_variant<
-    NumberData, number
+    NumberData, number,
+    ListData, std::list<nv::recursive_named_variant_>,
+    SymbolData, std::string
     >::type;
 //    BoolData, bool,
 //    StringData, std::string,
 //    CharData, wchar_t,
-//    SybmolData, std::string,
 //    PairData, std::pair<nv::recursive_named_variant_,nv::recursive_named_variant_>,
-//    ListData, std::list<nv::recursive_named_variant_>,
 //    DottedList, std::pair<std::list<nv::recursive_named_variant_>,nv::recursive_named_variant_>
 
 //    VectorData, std::vector<nv::recursive_named_variant_>,
 //    PortData, port,
 //    ProcedureData, procedure,
 
-using PResult = std::tuple<LispVal, int>;
 
-PResult PNumber(const std::string &s, int p = 0);
+std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p = 0);
+
+std::string show(const LispVal &val);
+
+LispVal eval(const LispVal &val);
