@@ -1,5 +1,8 @@
 #include "parser.hpp"
 #include <sstream>
+#include <iostream>
+
+namespace sucheme {
 
 inline bool whitespace(wchar_t c) {
     return c==' ' || c == '\n' || c==0;
@@ -45,7 +48,7 @@ inline std::tuple<int,int> parse_int(const std::string &s, int p) {
     return std::make_tuple(ret, p);
 }
 
-std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p)
+std::tuple<unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
 {
     //std::cerr << "PExpr called:" << s << " " <<  s[p] << " " << p << std::endl;
 
@@ -54,9 +57,9 @@ std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p)
     if(s[p] == '-' || s[p] == '+'){
         if(delimiter(s[p+1])) {
             if(s[p] == '+')
-                return std::make_tuple(nv::init<SymbolData>(std::string("+")), p+1);
+                return std::make_tuple(new Symbol("+"), p+1);
             else if(s[p] == '-')
-                return std::make_tuple(nv::init<SymbolData>(std::string("-")), p+1);
+                return std::make_tuple(new Symbol("-"), p+1);
         }
 
         int64_t ret=0;
@@ -72,7 +75,7 @@ std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p)
 
         std::tie(ret,p) = parse_int(s,p);
         if(delimiter(s[p]))
-            return std::make_tuple(nv::init<NumberData>(number(sig?ret:-ret)), p);
+            return std::make_tuple(new Number(sig?ret:-ret), p);
         else
             throw std::exception();  
     }
@@ -81,32 +84,31 @@ std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p)
         int64_t ret=0;
         std::tie(ret,p) = parse_int(s,p);
         if(delimiter(s[p]))
-            return std::make_tuple(nv::init<NumberData>(number(ret)), p);
+            return std::make_tuple(new Number(ret), p);
         else
-            throw std::exception();  
+            throw std::exception();
     }
 
     if(s[p] == '(') {
         p++;
-        std::list<LispVal> value;
+        std::list<unique_ptr<LispVal>> value;
         while(s[p] != ')') {
-            while(whitespace(s[p])) p++;
+            while(whitespace(s[p])) p++;p
 
             auto ret = PExpr(s, p);
-            LispVal &res = std::get<0>(ret);
             p = std::get<1>(ret);
-            value.push_back(res);
+            value.push_back(std::move(std::get<0>(ret)));
 
             while(whitespace(s[p])) p++;
         }
-        return std::make_tuple(nv::init<ListData>(value), p+1);
+        return std::make_tuple(List(value), p+1);
     }
 
     if(initial(s[p])) { // <initial> <subsequent>*
         int start = p;
         while(subsequent(s[++p])) {}
         if(delimiter(s[p]))
-            return std::make_tuple(nv::init<SymbolData>(std::string(&(s[start]), uint32_t(p - start))), p);
+            return std::make_tuple(new Symbol(std::string(&(s[start]), uint32_t(p - start))), p);
         else
             throw std::exception();
     }
@@ -115,3 +117,4 @@ std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p)
     throw std::exception();    
 }
 
+}

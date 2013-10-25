@@ -1,52 +1,52 @@
 #pragma once
 
-#include "named_variant/named_variant.hpp"
 #include <vector>
 #include <tuple>
 #include <list>
+#include <functional>
+#include <string>
 
-namespace nv = named_variants;
+namespace sucheme {
 
-struct BoolData {};
-struct StringData {};
-struct CharData {};
-struct VectorData {};
-struct PairData {};
-struct SymbolData {};
-struct PortData {};
-struct ProcedureData {};
-struct NumberData {};
-struct ListData {};
-
-// data value = BoolData bool
-//            | StringData String
-//           ....
-
-struct port{};
-
-struct number {
-    int integer;
-    number(int i) : integer(i) {}
+class LispVal
+{
+    virtual std::string show() = 0;
+//    virtual LispVal eval() = 0;
 };
 
-using LispVal = nv::make_recursive_named_variant<
-    NumberData, number,
-    ListData, std::list<nv::recursive_named_variant_>,
-    SymbolData, std::string
-    >::type;
-//    BoolData, bool,
-//    StringData, std::string,
-//    CharData, wchar_t,
-//    PairData, std::pair<nv::recursive_named_variant_,nv::recursive_named_variant_>,
-//    DottedList, std::pair<std::list<nv::recursive_named_variant_>,nv::recursive_named_variant_>
+class Number : LispVal
+{
+    int integer;
+    std::string show() override;
+//    LispVal eval() override;
+public:
+    Number(int integer) : integer(integer) {}
+};
 
-//    VectorData, std::vector<nv::recursive_named_variant_>,
-//    PortData, port,
-//    ProcedureData, procedure,
+class Symbol : LispVal
+{
+    std::string name;
+    std::string show() override;
+//    LispVal eval() override { return value_map[name]; }
+public:
+    Symbol(const std::string &name) : name(name) {}
+};
 
+class List : LispVal
+{
+    std::list<LispVal> list;
+    std::string show() override;
+//    LispVal eval() override;
+public:
+    List(const std::list<LispVal> list) : list(list) {}
+};
+
+class Procedure : LispVal
+{
+    std::string show() override;
+//    LispVal eval() override {return this};
+};
 
 std::tuple<LispVal, int> PExpr(const std::string &s, int32_t p = 0);
 
-std::string show(const LispVal &val);
-
-LispVal eval(const LispVal &val);
+}

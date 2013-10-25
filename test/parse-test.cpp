@@ -34,7 +34,7 @@ namespace test
         test_number_parser(INT_MAX);
     }
 
-    void test_list_parser()
+/*    void test_list_parser()
     {
         auto ret = PExpr("(1 2)");
         auto dat = std::get<0>(ret);
@@ -95,7 +95,12 @@ namespace test
         test_parse("(test)", "( test )");
         test_parse("((test))", "( (test )\
  )");
-        test_parse("((+)())");
+        test_parse("((+) ())", "((+)())");
 
     }
+
+    void test_plus()
+    {
+
+    }*/
 }
