@@ -9,30 +9,31 @@ namespace sucheme{
     using std::stringstream;
     using std::to_string;
 
-    string LispVal::show() {
-        return "sleislfij";
+    string LispVal::show() const {
+        throw std::exception();
     }
 
-    string Number::show() {
+    string Number::show() const  {
         return to_string(this->integer);
     }
 
-    string Symbol::show() {
+    string Symbol::show() const {
         return this->name;
     }
 
-    string Pair::show() {
+    string Pair::show() const {
         vector<string> buf;
         
         auto *next=this;
 
-        do{
+        for(;;){
             buf.push_back(next->car->show());
-            if(typeid(*next->cdr.get()) != typeid(Pair)) {
+
+            if(typeid(*next->cdr.get()) != typeid(Pair))
                 break;
-            }
+
             next = static_cast<Pair*>(next->cdr.get());
-        }while(true);
+        }
 
         if(typeid(*next->cdr.get()) == typeid(Empty)) {
             stringstream ost;
@@ -50,6 +51,12 @@ namespace sucheme{
         } else {
             throw std::exception();
         }
-     }
+    }
+    
+    string Procedure::show() const {
+        stringstream ost;
+        ost << "<Procedure 0x" << std::hex << (unsigned long)func << ">";
+        return ost.str();
+    }
 
 }

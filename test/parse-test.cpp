@@ -76,8 +76,15 @@ namespace sucheme
         }
     }
 
+    void test_eval(LispVal &a, const LispVal &b)
+    {
+        cut_assert_equal_string(a.eval()->show().c_str(),b.show().c_str());
+    }
+
     void test_plus()
     {
-
+        test_eval(*parse("(+ 1 2)"), *parse("3"));
+        test_eval(*parse("(+ 1 2 5)"), *parse("8"));
+        test_eval(*parse("(+ (+ 1 4) (+ 1 4 5))"), *parse("15"));
     }
 }

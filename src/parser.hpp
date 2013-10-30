@@ -8,34 +8,80 @@
 #include <memory>
 
 namespace sucheme {
+    using std::unique_ptr;
+    using std::string;
+    using std::vector;
+    using std::move;
+
+
+    template <class T, class ...Args>
+    inline std::unique_ptr<T> make_unique(Args &&...args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
     struct LispVal
     {
-        virtual std::string show() = 0;
-//    virtual LispVal eval() = 0;
+        virtual string show() const = 0;
+        virtual unique_ptr<LispVal> eval() = 0;
+        virtual unique_ptr<LispVal> clone()  const = 0;
+        virtual bool operator==(const LispVal&) const = 0;
     };
 
     struct Number : LispVal
     {
         int integer;
-        std::string show() override;
-//    LispVal eval() override;
+        string show() const override;
+        unique_ptr<LispVal> clone() const override {
+            return make_unique<Number>(integer);
+        }
+        unique_ptr<LispVal> eval() override {
+            return clone();
+        }
+        bool operator==(const LispVal &val) const {
+            auto a = dynamic_cast<const Number*>(&val);
+            return a && a->integer == integer;
+        }
+
         Number(int integer) : integer(integer) {}
     };
 
     struct Symbol : LispVal
     {
-        std::string name;
-        std::string show() override;
-//    LispVal eval() override { return value_map[name]; }
-        Symbol(const std::string &name) : name(name) {}
+        string name;
+        string show() const override;
+        unique_ptr<LispVal> clone() const override {
+            return make_unique<Symbol>(name);
+        }
+        unique_ptr<LispVal> eval() override;
+
+        bool operator==(const LispVal&val) const {
+            auto a = dynamic_cast<const Symbol*>(&val);
+            return a && a->name == name;
+        }
+
+        Symbol(const string &name) : name(name) {}
     };
 
     struct Pair : LispVal
     {
-        std::unique_ptr<LispVal> car;
-        std::unique_ptr<LispVal> cdr;
+        unique_ptr<LispVal> car;
+        unique_ptr<LispVal> cdr;
 
-        std::string show() override;
+        string show() const override;
+        unique_ptr<LispVal> eval() override;
+
+        unique_ptr<LispVal> clone() const override {
+            auto ret = make_unique<Pair>();
+            ret->car = car->clone();
+            ret->cdr = cdr->clone();
+            return move(ret);
+        }
+
+        bool operator==(const LispVal&val) const {
+            auto a = dynamic_cast<const Pair*>(&val);
+            return a && a->car == car && a->cdr == cdr;
+        }
 
 //        Pair(LispVal &&car, LispVal &&cdr) : car(car), cdr(cdr) {}
 //        Pair(LispVal &car, LispVal &cdr) : car(car), cdr(cdr) {}
@@ -43,15 +89,46 @@ namespace sucheme {
 
     struct Empty : LispVal
     {
-        std::string show () override { return "()"; }
+        string show () const override { return "()"; }
+        unique_ptr<LispVal> clone() const override {
+            return make_unique<Empty>();
+        }
+        unique_ptr<LispVal> eval() override {
+            return clone();
+        }
+
+        bool operator==(const LispVal&val) const {
+            auto a = dynamic_cast<const Empty*>(&val);
+            return a;
+        }
+
         Empty() {}
     };
 
+    using subr = unique_ptr<LispVal> (*)(const vector<unique_ptr<LispVal> >&);
+
     struct Procedure : LispVal
     {
-//        std::string show() override;
-//    LispVal eval() override {return this};
+        subr func;
+        
+        string show() const override;
+        unique_ptr<LispVal> clone() const override {
+            return make_unique<Procedure>(func);
+        }
+        
+        unique_ptr<LispVal> eval() override {
+            return clone();
+        }
+
+        bool operator==(const LispVal&val) const {
+            auto a = dynamic_cast<const Procedure*>(&val);
+            return a && a->func == func;
+        }
+
+        Procedure(const subr &func) : func(func) {}
     };
 
-    std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p = 0);
+    std::tuple<unique_ptr<LispVal>, int> PExpr(const string &s, int32_t p = 0);
+    std::unique_ptr<LispVal> parse(const string &s);
+
 }

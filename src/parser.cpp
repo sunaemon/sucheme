@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include <sstream>
 #include <iostream>
+#include <assert.h>
 
 namespace sucheme {
 
@@ -139,5 +140,12 @@ std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
 
     throw std::exception();    
 }
+
+    std::unique_ptr<LispVal> parse(const std::string &s) {
+        auto ret = PExpr(s);
+        assert(s.length() == std::get<1>(ret));
+        return move(std::get<0>(ret));
+    }
+
 
 }
