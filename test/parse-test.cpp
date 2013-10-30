@@ -1,11 +1,17 @@
 #include <cppcutter.h>
-#include "parser.hpp"
+#include "../src/parser.hpp"
 #include <random>
+#include <climits>
+#include <iostream>
 
-namespace test
+namespace sucheme
 {
+    using std::string;
+    using std::ostringstream;
+    using std::get;
+    using std::move;
 
-    std::string itos(int number)
+    string itos(int number)
     {
         std::ostringstream ss;
         ss << number;
@@ -14,11 +20,10 @@ namespace test
     
     void test_number_parser(int i)
     {
-        std::string s = itos(i);
+        string s = itos(i);
         auto ret = PExpr(s);
-        cut_assert(nv::type(std::get<0>(ret)) == typeid(NumberData));
-        cut_assert_equal_int(i, nv::get<NumberData>(std::get<0>(ret)).integer);
-        cut_assert_equal_int(s.length(), std::get<1>(ret));
+        cut_assert_equal_int(i, dynamic_cast<Number*>(get<0>(ret).get())->integer);
+        cut_assert_equal_int(s.length(), get<1>(ret));
     }
     
     void test_number_parser()
@@ -34,73 +39,45 @@ namespace test
         test_number_parser(INT_MAX);
     }
 
-/*    void test_list_parser()
+    void test_list_parser()
     {
         auto ret = PExpr("(1 2)");
-        auto dat = std::get<0>(ret);
-        cut_assert(nv::type(dat) == typeid(ListData));
-        std::list<LispVal> data = nv::get<ListData>(dat);
-        cut_assert_equal_int(2, data.size());
-        auto it = data.begin();
-        cut_assert_equal_int(1, nv::get<NumberData>(*it++).integer);
-        cut_assert_equal_int(2, nv::get<NumberData>(*it++).integer);
-        //cut_assert_equal_int(s.length(), std::get<1>(ret));
+        auto dat = dynamic_cast<Pair*>(get<0>(ret).get());
+        cut_assert_equal_int(1,dynamic_cast<Number*>(dat->car.get())->integer);
+        auto sc = dynamic_cast<Pair*>(dat->cdr.get());
+        cut_assert_equal_int(2,dynamic_cast<Number*>(sc->car.get())->integer);
+        dynamic_cast<Empty*>(sc->cdr.get());
     }
 
-    void test_identifier()
-    {
-        auto ret = PExpr("(test test)");
-        auto dat = std::get<0>(ret);
-        cut_assert(nv::type(dat) == typeid(ListData));
-        std::list<LispVal> data = nv::get<ListData>(dat);
-        cut_assert_equal_int(2, data.size());
-        auto it = data.begin();
-        cut_assert_equal_string("test", nv::get<SymbolData>(*it++).c_str());
-        cut_assert_equal_string("test", nv::get<SymbolData>(*it++).c_str());
-        //cut_assert_equal_int(s.length(), std::get<1>(ret));
-    }
 
-    void test_identifier2()
-    {
-        auto ret = PExpr("(+ test)");
-        auto dat = std::get<0>(ret);
-        cut_assert(nv::type(dat) == typeid(ListData));
-        std::list<LispVal> data = nv::get<ListData>(dat);
-        cut_assert_equal_int(2, data.size());
-        auto it = data.begin();
-        cut_assert_equal_string("+", nv::get<SymbolData>(*it++).c_str());
-        cut_assert_equal_string("test", nv::get<SymbolData>(*it++).c_str());
-
-        //cut_assert_equal_int(s.length(), std::get<1>(ret));
-    }
-
-    void test_parse(const std::string &s)
-    {
-        auto ret = PExpr(s);
-        auto dat = std::get<0>(ret);
-        cut_assert_equal_string(s.c_str(), show(dat).c_str());
-    }
-
-    void test_parse(const std::string &s, const std::string &t)
+    void test_parse(const string &s, const string &t)
     {
         auto ret = PExpr(t);
-        auto dat = std::get<0>(ret);
-        cut_assert_equal_string(s.c_str(), show(dat).c_str());
+        auto dat = move(get<0>(ret));
+        cut_assert_equal_string(s.c_str(), dat->show().c_str());
+    }
+
+    void test_parse(const string &s)
+    {
+        test_parse(s,s);
     }
 
     void test_parse()
     {
-        test_parse("((+) test)");
-        test_parse("((test) ((>lsifsefj1111)))");
-        test_parse("(test)", "( test )");
-        test_parse("((test))", "( (test )\
- )");
-        test_parse("((+) ())", "((+)())");
-
+        try {
+            test_parse("((+) test)");
+            test_parse("((test) ((>lsifsefj1111)))");
+            test_parse("(test)", "( test )");
+            test_parse("((test))", "( (test ) \
+            )");
+            test_parse("((+) ())", "((+)())");
+        } catch(std::exception &e) {
+            std::cerr << e.what() << std::endl;
+        }
     }
 
     void test_plus()
     {
 
-    }*/
+    }
 }

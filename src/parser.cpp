@@ -48,7 +48,7 @@ inline std::tuple<int,int> parse_int(const std::string &s, int p) {
     return std::make_tuple(ret, p);
 }
 
-std::tuple<unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
+std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
 {
     //std::cerr << "PExpr called:" << s << " " <<  s[p] << " " << p << std::endl;
 
@@ -57,9 +57,9 @@ std::tuple<unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
     if(s[p] == '-' || s[p] == '+'){
         if(delimiter(s[p+1])) {
             if(s[p] == '+')
-                return std::make_tuple(new Symbol("+"), p+1);
+                return std::make_tuple(std::unique_ptr<LispVal>(new Symbol("+")), p+1);
             else if(s[p] == '-')
-                return std::make_tuple(new Symbol("-"), p+1);
+                return std::make_tuple(std::unique_ptr<LispVal>(new Symbol("-")), p+1);
         }
 
         int64_t ret=0;
@@ -75,40 +75,63 @@ std::tuple<unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
 
         std::tie(ret,p) = parse_int(s,p);
         if(delimiter(s[p]))
-            return std::make_tuple(new Number(sig?ret:-ret), p);
+            return std::make_tuple(std::unique_ptr<LispVal>(new Number(sig?ret:-ret)), p);
         else
-            throw std::exception();  
+            throw std::exception();
     }
     
     if(digit(s[p])) {
         int64_t ret=0;
         std::tie(ret,p) = parse_int(s,p);
         if(delimiter(s[p]))
-            return std::make_tuple(new Number(ret), p);
+            return std::make_tuple(std::unique_ptr<LispVal>(new Number(ret)), p);
         else
             throw std::exception();
     }
 
     if(s[p] == '(') {
         p++;
-        std::list<unique_ptr<LispVal>> value;
+        if(s[p] == ')')
+            return std::make_tuple(std::unique_ptr<LispVal>(new Empty), p+1);
+
+        Pair *next;
+
+        std::unique_ptr<Pair> list(next = new Pair);
+
+        while(whitespace(s[p])) p++;
+
+        auto ret = PExpr(s, p);
+
+        list->car = std::move(std::get<0>(ret));
+        p = std::get<1>(ret);
+
+        while(whitespace(s[p])) p++;
+
         while(s[p] != ')') {
-            while(whitespace(s[p])) p++;p
+            while(whitespace(s[p])) p++;
 
             auto ret = PExpr(s, p);
+
+            Pair *tmp;
+
+            next->cdr = std::unique_ptr<Pair>(tmp = new Pair);
+            next = tmp;
+            next->car  = std::move(std::get<0>(ret));
+
             p = std::get<1>(ret);
-            value.push_back(std::move(std::get<0>(ret)));
 
             while(whitespace(s[p])) p++;
         }
-        return std::make_tuple(List(value), p+1);
+        next->cdr = std::unique_ptr<LispVal>(new Empty);
+        
+        return std::make_tuple(std::move(list), p+1);
     }
 
     if(initial(s[p])) { // <initial> <subsequent>*
         int start = p;
         while(subsequent(s[++p])) {}
         if(delimiter(s[p]))
-            return std::make_tuple(new Symbol(std::string(&(s[start]), uint32_t(p - start))), p);
+            return std::make_tuple(std::unique_ptr<LispVal>(new Symbol(std::string(&(s[start]), uint32_t(p - start)))), p);
         else
             throw std::exception();
     }
