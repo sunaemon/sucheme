@@ -2,8 +2,11 @@
 #include <sstream>
 #include <iostream>
 #include <assert.h>
+#include <memory>
 
 namespace sucheme {
+    using std::dynamic_pointer_cast;
+    using std::static_pointer_cast;
 
 inline bool whitespace(wchar_t c) {
     return c==' ' || c == '\n' || c==0;
@@ -49,18 +52,17 @@ inline std::tuple<int,int> parse_int(const std::string &s, int p) {
     return std::make_tuple(ret, p);
 }
 
-std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
+std::tuple<std::shared_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
 {
-    //std::cerr << "PExpr called:" << s << " " <<  s[p] << " " << p << std::endl;
-
     while(whitespace(s[p])) p++;
 
     if(s[p] == '-' || s[p] == '+'){
         if(delimiter(s[p+1])) {
-            if(s[p] == '+')
-                return std::make_tuple(std::unique_ptr<LispVal>(new Symbol("+")), p+1);
+            if(s[p] == '+') {
+                return make_tuple<std::shared_ptr<LispVal>, int>(make_shared<Symbol>("+"), p+1);
+            }
             else if(s[p] == '-')
-                return std::make_tuple(std::unique_ptr<LispVal>(new Symbol("-")), p+1);
+                return make_tuple<std::shared_ptr<LispVal>, int>(make_shared<Symbol>("-"), p+1);
         }
 
         int64_t ret=0;
@@ -76,7 +78,7 @@ std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
 
         std::tie(ret,p) = parse_int(s,p);
         if(delimiter(s[p]))
-            return std::make_tuple(std::unique_ptr<LispVal>(new Number(sig?ret:-ret)), p);
+            return make_tuple(make_shared<Number>(sig?ret:-ret), p);
         else
             throw std::exception();
     }
@@ -85,7 +87,7 @@ std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
         int64_t ret=0;
         std::tie(ret,p) = parse_int(s,p);
         if(delimiter(s[p]))
-            return std::make_tuple(std::unique_ptr<LispVal>(new Number(ret)), p);
+            return make_tuple(make_shared<Number>(ret), p);
         else
             throw std::exception();
     }
@@ -93,59 +95,57 @@ std::tuple<std::unique_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
     if(s[p] == '(') {
         p++;
         if(s[p] == ')')
-            return std::make_tuple(std::unique_ptr<LispVal>(new Empty), p+1);
+            return std::make_tuple(make_shared<Empty>(), p+1);
 
-        Pair *next;
-
-        std::unique_ptr<Pair> list(next = new Pair);
+        auto list = make_shared<Pair>();
+        shared_ptr<Pair> next(list);
 
         while(whitespace(s[p])) p++;
 
         auto ret = PExpr(s, p);
+        auto a = move(std::get<0>(ret));
+        
+        std::cerr << (bool)a << " " << a.use_count() << " " << a.get() << std::endl;
 
-        list->car = std::move(std::get<0>(ret));
+        list->car = a;
         p = std::get<1>(ret);
-
-        while(whitespace(s[p])) p++;
 
         while(s[p] != ')') {
             while(whitespace(s[p])) p++;
 
             auto ret = PExpr(s, p);
 
-            Pair *tmp;
+            next->cdr = make_shared<Pair>();
 
-            next->cdr = std::unique_ptr<Pair>(tmp = new Pair);
-            next = tmp;
-            next->car  = std::move(std::get<0>(ret));
+            next = static_pointer_cast<Pair>(next->cdr);
+
+            next->car  = move(std::get<0>(ret));
 
             p = std::get<1>(ret);
 
             while(whitespace(s[p])) p++;
         }
-        next->cdr = std::unique_ptr<LispVal>(new Empty);
+        next->cdr = make_shared<Empty>();
         
-        return std::make_tuple(std::move(list), p+1);
+        return std::make_tuple(move(list), p+1);
     }
 
     if(initial(s[p])) { // <initial> <subsequent>*
         int start = p;
         while(subsequent(s[++p])) {}
         if(delimiter(s[p]))
-            return std::make_tuple(std::unique_ptr<LispVal>(new Symbol(std::string(&(s[start]), uint32_t(p - start)))), p);
+            return make_tuple(make_shared<Symbol>(string(&(s[start]), uint32_t(p - start))), p);
         else
             throw std::exception();
     }
-    std::cerr << s[p] << " " << p << std::endl;
+//    std::cerr << s[p] << " " << p << std::endl;
 
     throw std::exception();    
 }
 
-    std::unique_ptr<LispVal> parse(const std::string &s) {
+    shared_ptr<LispVal> parse(const string &s) {
         auto ret = PExpr(s);
-        assert(s.length() == std::get<1>(ret));
-        return move(std::get<0>(ret));
+        assert(s.length() == get<1>(ret));
+        return move(get<0>(ret));
     }
-
-
 }

@@ -3,7 +3,7 @@ AM_CXXFLAGS = $(CFLAGS) -W -Wall -std=c++0x
 AM_LDFLAGS = -lreadline
 
 noinst_LTLIBRARIES = libsucheme.la
-libsucheme_la_SOURCES = ./parser.cpp ./eval.cpp ./show.cpp ./environment.cpp
+libsucheme_la_SOURCES = ./parser.cpp ./eval.cpp ./show.cpp ./functions.cpp
 
 bin_PROGRAMS = sucheme
 sucheme_SOURCES = ./main.cpp

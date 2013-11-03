@@ -1,5 +1,4 @@
 #pragma once
-
 #include <vector>
 #include <tuple>
 #include <list>
@@ -9,9 +8,14 @@
 
 namespace sucheme {
     using std::unique_ptr;
+    using std::shared_ptr;
     using std::string;
     using std::vector;
     using std::move;
+    using std::make_shared;
+    using std::make_tuple;
+    using std::get;
+    using std::dynamic_pointer_cast;
 
 
     template <class T, class ...Args>
@@ -20,23 +24,21 @@ namespace sucheme {
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
+    struct Environment;
+
     struct LispVal
     {
         virtual string show() const = 0;
-        virtual unique_ptr<LispVal> eval() = 0;
-        virtual unique_ptr<LispVal> clone()  const = 0;
+        virtual shared_ptr<LispVal> eval(const Environment &) = 0;
         virtual bool operator==(const LispVal&) const = 0;
     };
 
-    struct Number : LispVal
+    struct Number : LispVal, std::enable_shared_from_this<Number>
     {
         int integer;
         string show() const override;
-        unique_ptr<LispVal> clone() const override {
-            return make_unique<Number>(integer);
-        }
-        unique_ptr<LispVal> eval() override {
-            return clone();
+        shared_ptr<LispVal> eval(const Environment &) override {
+            return shared_from_this();
         }
         bool operator==(const LispVal &val) const {
             auto a = dynamic_cast<const Number*>(&val);
@@ -46,14 +48,11 @@ namespace sucheme {
         Number(int integer) : integer(integer) {}
     };
 
-    struct Symbol : LispVal
+    struct Symbol : LispVal, std::enable_shared_from_this<Symbol>
     {
         string name;
         string show() const override;
-        unique_ptr<LispVal> clone() const override {
-            return make_unique<Symbol>(name);
-        }
-        unique_ptr<LispVal> eval() override;
+        shared_ptr<LispVal> eval(const Environment &) override;
 
         bool operator==(const LispVal&val) const {
             auto a = dynamic_cast<const Symbol*>(&val);
@@ -63,22 +62,15 @@ namespace sucheme {
         Symbol(const string &name) : name(name) {}
     };
 
-    struct Pair : LispVal
+    struct Pair : LispVal, std::enable_shared_from_this<Pair>
     {
-        unique_ptr<LispVal> car;
-        unique_ptr<LispVal> cdr;
+        shared_ptr<LispVal> car;
+        shared_ptr<LispVal> cdr;
 
         string show() const override;
-        unique_ptr<LispVal> eval() override;
+        shared_ptr<LispVal> eval(const Environment &) override;
 
-        unique_ptr<LispVal> clone() const override {
-            auto ret = make_unique<Pair>();
-            ret->car = car->clone();
-            ret->cdr = cdr->clone();
-            return move(ret);
-        }
-
-        bool operator==(const LispVal&val) const {
+        bool operator==(const LispVal &val) const {
             auto a = dynamic_cast<const Pair*>(&val);
             return a && a->car == car && a->cdr == cdr;
         }
@@ -87,14 +79,11 @@ namespace sucheme {
 //        Pair(LispVal &car, LispVal &cdr) : car(car), cdr(cdr) {}
     };
 
-    struct Empty : LispVal
+    struct Empty : LispVal, std::enable_shared_from_this<Empty>
     {
         string show () const override { return "()"; }
-        unique_ptr<LispVal> clone() const override {
-            return make_unique<Empty>();
-        }
-        unique_ptr<LispVal> eval() override {
-            return clone();
+        shared_ptr<LispVal> eval(const Environment &) override {
+            return shared_from_this();
         }
 
         bool operator==(const LispVal&val) const {
@@ -105,22 +94,19 @@ namespace sucheme {
         Empty() {}
     };
 
-    using subr = unique_ptr<LispVal> (*)(const vector<unique_ptr<LispVal> >&);
+    using subr = shared_ptr<LispVal> (*)(const vector<shared_ptr<LispVal> >&);
 
-    struct Procedure : LispVal
+    struct Procedure : LispVal, std::enable_shared_from_this<Procedure>
     {
         subr func;
         
         string show() const override;
-        unique_ptr<LispVal> clone() const override {
-            return make_unique<Procedure>(func);
-        }
         
-        unique_ptr<LispVal> eval() override {
-            return clone();
+        shared_ptr<LispVal> eval(const Environment &) override {
+            return shared_from_this();
         }
 
-        bool operator==(const LispVal&val) const {
+        bool operator==(const LispVal &val) const {
             auto a = dynamic_cast<const Procedure*>(&val);
             return a && a->func == func;
         }
@@ -128,7 +114,7 @@ namespace sucheme {
         Procedure(const subr &func) : func(func) {}
     };
 
-    std::tuple<unique_ptr<LispVal>, int> PExpr(const string &s, int32_t p = 0);
-    std::unique_ptr<LispVal> parse(const string &s);
+    std::tuple<shared_ptr<LispVal>, int> PExpr(const string &s, int32_t p = 0);
+    std::shared_ptr<LispVal> parse(const string &s);
 
 }

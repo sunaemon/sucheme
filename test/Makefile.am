@@ -5,6 +5,10 @@ AM_LDFLAGS = $(LDFLAGS) -module -rpath $(libdir) -avoid-version
 TESTS = run-test.sh
 TESTS_ENVIRONMENT = NO_MAKE=yes CUTTER="$(CUTTER)"
 
+noinst_PROGRAMS = test-sucheme
+test_sucheme_SOURCES = test-sucheme.cpp
+test_sucheme_LDADD = ../src/libsucheme.la
+
 noinst_LTLIBRARIES = test.la
 test_la_SOURCES = parse-test.cpp
 test_la_LIBADD = $(top_builddir)/src/libsucheme.la
