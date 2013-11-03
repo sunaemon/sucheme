@@ -69,7 +69,7 @@ std::tuple<std::shared_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
         bool sig=true;
     
         if(s[p] =='+') {
-            p++;
+             p++;
             sig=true;
         } else if(s[p] =='-') {
             p++;
@@ -105,10 +105,12 @@ std::tuple<std::shared_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
         auto ret = PExpr(s, p);
         auto a = move(std::get<0>(ret));
         
-        std::cerr << (bool)a << " " << a.use_count() << " " << a.get() << std::endl;
+//        std::cerr << (bool)a << " " << a.use_count() << " " << a.get() << std::endl;
 
         list->car = a;
         p = std::get<1>(ret);
+
+        while(whitespace(s[p])) p++;
 
         while(s[p] != ')') {
             while(whitespace(s[p])) p++;
@@ -138,7 +140,7 @@ std::tuple<std::shared_ptr<LispVal>, int> PExpr(const std::string &s, int32_t p)
         else
             throw std::exception();
     }
-//    std::cerr << s[p] << " " << p << std::endl;
+    std::cerr << s << " " << s[p] << " " << p << std::endl;
 
     throw std::exception();    
 }

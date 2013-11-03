@@ -5,6 +5,7 @@
 #include <random>
 #include <climits>
 #include <iostream>
+#include <sstream>
 
 namespace sucheme
 {

@@ -18,38 +18,24 @@ namespace sucheme{
     }
 
     shared_ptr<LispVal> Pair::eval(const Environment &e) {
-        auto f = dynamic_pointer_cast<Symbol>(car);
+//        auto f = dynamic_pointer_cast<Symbol>(car);
 
         vector<shared_ptr<LispVal> > args;
 
-        std::cerr << "0" << std::endl;
-            
         auto next = shared_from_this();
 
         for(;;){
-            std::cerr << "1" << std::endl;
-
             auto pcar = dynamic_pointer_cast<Pair>(next->cdr);
-
-            std::cerr << "2" << std::endl;
 
             if(!pcar) break;
 
-            std::cerr << "3" << std::endl;
-
             next = pcar;
 
-            std::cerr << "4" << std::endl;
-
             args.push_back(next->car->eval(e));
-
-            std::cerr << "5" << std::endl;
         }
 
         if(typeid(*next->cdr.get()) != typeid(Empty))
             throw 1;
-
-        std::cerr << "test" << std::endl;
 
         auto val = car->eval(e);
 
