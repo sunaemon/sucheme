@@ -7,6 +7,7 @@
 using namespace sucheme;
 using namespace std;
 
+CPPUNIT_TEST_SUITE_REGISTRATION( parser_test );
 
 string itos(int number)
 {
@@ -62,16 +63,12 @@ void parser_test::test_parse(const string &s)
 
 void parser_test::test_parse()
 {
-    try {
-        test_parse("((+) test)");
-        test_parse("((test) ((>lsifsefj1111)))");
-        test_parse("(test)", "( test )");
-        test_parse("((test))", "( (test ) \
+    test_parse("((+) test)");
+    test_parse("((test) ((>lsifsefj1111)))");
+    test_parse("(test)", "( test )");
+    test_parse("((test))", "( (test ) \
             )");
-        test_parse("((+) ())", "((+)())");
-    } catch(std::exception &e) {
-        std::cerr << e.what() << std::endl;
-    }
+    test_parse("((+) ())", "((+)())");
 }
 
 void parser_test::test_eval(shared_ptr<LispVal> a, shared_ptr<LispVal> b)
@@ -85,6 +82,6 @@ void parser_test::test_eval(shared_ptr<LispVal> a, shared_ptr<LispVal> b)
 void parser_test::test_plus()
 {
     test_eval(move(parse("(+ 1 2)")), move(parse("3")));
-//        test_eval(*parse("(+ 1 2 5)"), *parse("8"));
-//        test_eval(*parse("(+ (+ 1 4) (+ 1 4 5))"), *parse("15"));
+    test_eval(parse("(+ 1 2 5)"), parse("8"));
+    test_eval(parse("(+ (+ 1 4) (+ 1 4 5))"), parse("15"));
 }

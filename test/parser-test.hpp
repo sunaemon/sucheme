@@ -15,10 +15,13 @@ class parser_test : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST_SUITE( parser_test );
     CPPUNIT_TEST( test_number_parser );
     CPPUNIT_TEST( test_list_parser );
+    CPPUNIT_TEST( test_parse );
+    CPPUNIT_TEST( test_plus );
     CPPUNIT_TEST_SUITE_END();
+
 public:
-    parser_test();
-    virtual ~parser_test();
+    parser_test() {};
+    virtual ~parser_test() {};
     
     void test_number_parser(int i);
     void test_number_parser();
