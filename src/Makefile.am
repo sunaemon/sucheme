@@ -8,5 +8,6 @@ bin_PROGRAMS = sucheme
 sucheme_SOURCES = ./main.cpp
 sucheme_LDADD = $(top_builddir)/src/libsucheme.la
 sucheme_LDFLAGS = -lreadline
+
 check-syntax:
 	$(CXXCOMPILE) -o nul -S ${CHK_SOURCES}
