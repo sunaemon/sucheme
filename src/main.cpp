@@ -17,4 +17,3 @@ int main(int, char**)
     }
     write_history(".my_history");
 }
-

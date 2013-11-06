@@ -1,8 +1,17 @@
+#include "gtest/gtest.h"
+
 #include <random>
 #include <climits>
 #include <iostream>
-#include <sstream>
-#include "parser-test.hpp"
+#include <string>
+#include <memory>
+#include "../src/parser.hpp"
+#include "../src/environment.hpp"
+#include "../src/functions.hpp"
+
+using namespace sucheme;
+using std::string;
+using std::shared_ptr;
 
 using namespace sucheme;
 using namespace std;
@@ -54,18 +63,20 @@ void test_parse(const string &s)
 
 TEST(Parser, Parse)
 {
+    test_parse("((+) test #b #f)");
     test_parse("((+) test)");
     test_parse("((test) ((>lsifsefj1111)))");
     test_parse("(test)", "( test )");
     test_parse("((test))", "( (test ) \
-            )");
+    )");
     test_parse("((+) ())", "((+)())");
+    test_parse("((lambda (x) (+ 1 x)) 3)");
 }
 
 void test_eval(shared_ptr<LispVal> a, shared_ptr<LispVal> b)
 {
-    Environment e;
-    e.env_map["+"] = make_shared<Procedure>(add);
+    auto e = make_shared<Environment>();
+    e->env_map["+"] = make_shared<Procedure>(add);
         
     EXPECT_EQ(a->eval(e)->show(),b->show());
 }
@@ -75,4 +86,9 @@ TEST(Eval, Plus)
     test_eval(parse("(+ 1 2)"), parse("3"));
     test_eval(parse("(+ 1 2 5)"), parse("8"));
     test_eval(parse("(+ (+ 1 4) (+ 1 4 5))"), parse("15"));
+}
+
+TEST(Eval, Lambda)
+{
+    test_eval(parse("((lambda (x) (+ 1 x)) 3)"), parse("4"));
 }

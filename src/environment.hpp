@@ -16,21 +16,25 @@ namespace sucheme
     struct LispVal;
 
     struct Environment {
-        Environment *parent;
+        shared_ptr<Environment> parent;
 
         map<string, shared_ptr<LispVal> > env_map;
 
-        shared_ptr<LispVal> lookup(const string &s) const {
-            auto i = env_map.find(s);
+        shared_ptr<LispVal> lookup(const string &name) const {
+            auto i = env_map.find(name);
 
             if(i == env_map.end()) {
                 if(parent)
-                    return parent->lookup(s);
+                    return parent->lookup(name);
                 else
                     throw std::exception();
             } else {
                 return (*i).second;
             }
+        }
+        
+        void define(const string &name, const shared_ptr<LispVal> &value) {
+            env_map[name] = value; //copy
         }
     };
 }

@@ -59,4 +59,15 @@ namespace sucheme{
         return ost.str();
     }
 
+    string LambdaProcedure::show() const {
+        stringstream ost;
+        ost << "<Lambda Procedure (lambda (";
+        for(auto &n : formals) {
+            ost << n << " ";
+        }
+        ost << ") ";
+        ost << body->show();
+        ost << ")>";
+        return ost.str();
+    }
 }
