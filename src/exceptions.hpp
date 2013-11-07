@@ -13,11 +13,14 @@ namespace sucheme{
         const char *what() const noexcept override {return str.c_str(); }\
     };
 
+    EXEPT(unbouded_variable);
     EXEPT(not_implemented);
     EXEPT(improper_list);
     EXEPT(bad_lisp_cast);
-    EXEPT(invaild_aplication);
+    EXEPT(invalid_aplication);
     EXEPT(malformed_lambda);
     EXEPT(malformed_define);
+    EXEPT(malformed_cond);
+    EXEPT(malformed_letrec);
 #undef EXEPT
 }

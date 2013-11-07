@@ -64,13 +64,13 @@ namespace sucheme {
                 if(delimiter(s[p]))
                     return make_tuple(make_shared<Bool>(true), p);
                 else
-                    throw exception();
+                    throw 1;
             } else if(s[p] == 'f') {
                 p++;
                 if(delimiter(s[p]))
                     return make_tuple(make_shared<Bool>(false), p);
                 else
-                    throw exception();
+                    throw "a";
             } else
                 throw exception();
         }else if(s[p] == '-' || s[p] == '+') {

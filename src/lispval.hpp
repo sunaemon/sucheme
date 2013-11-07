@@ -42,7 +42,7 @@ namespace sucheme {
     struct Bool : LispVal, std::enable_shared_from_this<Bool>
     {
         bool value;
-        string show() const override { return value ? "#t" : "#b"; }
+        string show() const override { return value ? "#t" : "#f"; }
         shared_ptr<LispVal> eval(shared_ptr<Environment>&) override {
             return shared_from_this();
         }

@@ -61,9 +61,9 @@ void test_parse(const string &s)
     test_parse(s,s);
 }
 
-TEST(Parser, Parse)
+TEST(Parser, Parse1)
 {
-    test_parse("((+) test #b #f)");
+    test_parse("((+) test #t #f)");
     test_parse("((+) test)");
     test_parse("((test) ((>lsifsefj1111)))");
     test_parse("(test)", "( test )");
@@ -75,8 +75,12 @@ TEST(Parser, Parse)
 
 void test_eval(shared_ptr<LispVal> a, shared_ptr<LispVal> b)
 {
-    auto e = make_shared<Environment>();
-    e->env_map["+"] = make_shared<Procedure>(add);
+    auto e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
+    e->env_map["+"] = make_shared<Procedure>(sucheme::add);
+    e->env_map["="] = make_shared<Procedure>(sucheme::eq);
+    e->env_map["-"] = make_shared<Procedure>(sucheme::sub);
+    e->env_map["*"] = make_shared<Procedure>(sucheme::mul);
+    e->env_map["else"] = make_shared<Bool>(true);
         
     EXPECT_EQ(a->eval(e)->show(),b->show());
 }
@@ -91,4 +95,18 @@ TEST(Eval, Plus)
 TEST(Eval, Lambda)
 {
     test_eval(parse("((lambda (x) (+ 1 x)) 3)"), parse("4"));
+}
+
+TEST(Eval, Cond)
+{
+    test_eval(parse("(cond (#t 1))"), parse("1"));
+    test_eval(parse("(cond (#f 1) (#t 2) (#f 1))"), parse("2"));
+    test_eval(parse("(cond (#f 1) (#f 2) (#t 4))"), parse("4"));
+}
+
+TEST(Eval, Rec)
+{
+    test_eval(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 3))"), parse("6"));
+    test_eval(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1) ((= 1 x) 1) (#t (+ (f (- x 1)) (f (- x 2))))))))(f 20))"), parse("10946"));
+
 }
