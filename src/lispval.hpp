@@ -3,6 +3,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include "exceptions.hpp"
 
 namespace sucheme {
     using std::unique_ptr;
@@ -82,6 +83,9 @@ namespace sucheme {
             auto a = dynamic_cast<const Pair*>(&val);
             return a && a->car == car && a->cdr == cdr;
         }
+        
+        Pair(const shared_ptr<LispVal> &car, const shared_ptr<LispVal> &cdr) : car(car), cdr(cdr) {}
+        Pair() {}
     };
 
     struct Empty : LispVal, std::enable_shared_from_this<Empty>

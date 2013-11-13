@@ -2,6 +2,8 @@
 #include "exceptions.hpp"
 #include <sstream>
 
+#define dump(x) (std::cerr << #x" : " << x << std::endl)
+
 namespace sucheme {
     template <class T, class ...Args>
     inline std::unique_ptr<T> make_unique(Args &&...args)

@@ -1,4 +1,5 @@
 #include <sstream>
+#include "list.hpp"
 #include "parser.hpp"
 #include "environment.hpp"
 #include <map>
@@ -16,30 +17,7 @@ namespace sucheme{
     using std::dynamic_pointer_cast;
     using std::endl;
     using std::cerr;
-    
-    template<typename T>
-    void ListForeach(const shared_ptr<Pair> &list, T callback) {
-        Pair *l = list.get();
-        Pair *ll;
 
-        for(;;){
-            callback(l->car);
-            ll = dynamic_cast<Pair*>(l->cdr.get());
-            if(!ll) break;
-            l = ll;
-        }
-
-        if(typeid(*l->cdr.get()) != typeid(Empty))
-            throw improper_list();
-    }
-
-    vector<shared_ptr<LispVal> > ListToVector(const shared_ptr<Pair> &list) {
-        vector<shared_ptr<LispVal> > ret;
-        ListForeach(list,[&ret](const shared_ptr<LispVal> &v){ret.push_back(v);});
-        return ret;
-    }
-
- 
     shared_ptr<LispVal> Symbol::eval(shared_ptr<Environment> &e) {
         return e->lookup(name);
     }
@@ -49,12 +27,12 @@ namespace sucheme{
 
         shared_ptr<LispVal> ret;
         
-        //cerr << show() << endl;
+        //cerr << ">" << show() << endl << endl;
 
         auto f = dynamic_pointer_cast<Symbol>(car);
         if(f && f->name == "lambda") {
             if(args.size() != 2)
-                throw malformed_lambda();
+                throw malformed_lambda("malformed_lambda argsize: expected 2 get " + to_string(args.size()));
 
             vector<string> formals;
             ListForeach(dcast<Pair>(args[0]),
@@ -94,7 +72,7 @@ namespace sucheme{
                 throw malformed_define();
         } else if(f && f->name == "letrec") {
             if(args.size() != 2)
-                throw malformed_letrec();
+                throw malformed_letrec("malformed_letrec:args expected 2 but get " + to_string(args.size()));
 
             auto e_letrec = make_shared<Environment>(e);
 
@@ -132,7 +110,7 @@ namespace sucheme{
                 throw invalid_aplication("invalid_aplication:" + show() + ";" + callee->show());
         }
     end:
-        //cerr << show() << " "<< ret->show() << endl;
+        //cerr << "<" << show() << " "<< ret->show() << endl << endl;
         return ret;
     }
 }

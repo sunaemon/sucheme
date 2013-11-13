@@ -1,4 +1,5 @@
 #include "functions.hpp"
+#include <iostream>
 
 namespace sucheme{
     using std::string;
@@ -8,6 +9,8 @@ namespace sucheme{
     using std::unique_ptr;
     using std::dynamic_pointer_cast;
     using std::make_shared;
+    using std::cout;
+    using std::endl;
  
    shared_ptr<LispVal> add(const vector<shared_ptr<LispVal> > &arg) {
         int ret=0;
@@ -49,6 +52,13 @@ namespace sucheme{
            throw invalid_aplication("invalid_aplication:lt");
 
        return make_shared<Bool>(dcast<Number>(arg[0])->integer < dcast<Number>(arg[1])->integer);
+    }
+
+   shared_ptr<LispVal> print(const vector<shared_ptr<LispVal> > &arg) {
+        for(auto &i : arg) 
+            cout << i->show();
+        cout << endl;
+        return make_shared<Empty>();
     }
 
 }

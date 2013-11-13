@@ -21,6 +21,10 @@ namespace sucheme
 
         map<string, shared_ptr<LispVal> > env_map;
 
+        bool have(const string &name) const {
+            return env_map.find(name) != env_map.end();
+        }
+
         shared_ptr<LispVal> lookup(const string &name) const {
             auto i = env_map.find(name);
 

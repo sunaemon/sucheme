@@ -19,4 +19,5 @@ namespace sucheme {
     shared_ptr<LispVal> eq(const vector<shared_ptr<LispVal> > &arg);
     shared_ptr<LispVal> sub(const vector<shared_ptr<LispVal> > &arg);
     shared_ptr<LispVal> mul(const vector<shared_ptr<LispVal> > &arg);
+    shared_ptr<LispVal> print(const vector<shared_ptr<LispVal> > &arg);
 }
