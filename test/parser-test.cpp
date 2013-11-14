@@ -46,11 +46,6 @@ TEST(Parser, List)
 {
     auto ret = PExpr("(1 2)");
 
-    cerr << sizeof(shared_ptr<LispVal>) << endl;
-    cerr << sizeof(Pair) << endl;
-    cerr << sizeof(Empty) << endl;
-    cerr << sizeof(test) << endl;
-
     shared_ptr<LispVal> dat = std::move(ret.val);
     auto dat_as_pair = dynamic_pointer_cast<Pair>(dat);
     EXPECT_EQ(1,dynamic_pointer_cast<Number>(dat_as_pair->car)->integer);
@@ -91,7 +86,7 @@ TEST(Parser, Parse1)
     test_parse("(begin (set! a 1) (set! b 2) (+ a b))");
 }
 
-
+/*
 TEST(Cps, IsSimple)
 {
     auto e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
@@ -128,15 +123,8 @@ TEST(Cps, simple)
 {
     test_cps(parse("(C f)"), parse("f"), parse("C"));
 
-    auto e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
-    e->env_map["+"] = make_shared<Procedure>(sucheme::add);
-    e->env_map["="] = make_shared<Procedure>(sucheme::eq);
-    e->env_map["-"] = make_shared<Procedure>(sucheme::sub);
-    e->env_map["*"] = make_shared<Procedure>(sucheme::mul);
-    e->env_map["else"] = make_shared<Bool>(true);
-    e->env_map["print"] = make_shared<Procedure>(sucheme::print);
-
-    cerr << show(cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("C"), *e)) << endl;
+    //cerr << show(cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("C"), *e)) << endl;
 //    cerr << cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("print"),*e)->eval(e)->show()<< endl;
 }
 
+*/
