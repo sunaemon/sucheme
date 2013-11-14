@@ -10,6 +10,7 @@
 #include "../src/functions.hpp"
 #include "../src/list.hpp"
 #include "../src/cps.hpp"
+#include "../src/show.hpp"
 
 using namespace sucheme;
 using std::string;
@@ -60,14 +61,14 @@ TEST(Parser, List)
 
 TEST(List, make_list)
 {
-    EXPECT_EQ(make_list(parse("2"), parse("(3 3)"))->show(), "(2 (3 3))");
+    EXPECT_EQ(show(make_list(parse("2"), parse("(3 3)"))), "(2 (3 3))");
 }
 
 void test_parse(const string &s, const string &t)
 {
     auto ret = PExpr(t);
     auto dat = move(get<0>(ret));
-    EXPECT_EQ(s, dat->show());
+    EXPECT_EQ(s, show(dat));
 }
 
 void test_parse(const string &s)
@@ -85,44 +86,11 @@ TEST(Parser, Parse1)
     )");
     test_parse("((+) ())", "((+)())");
     test_parse("((lambda (x) (+ 1 x)) 3)");
+    EXPECT_EQ(true, initial('!'));
+    EXPECT_EQ(true, initial('~'));
+    test_parse("(begin (set! a 1) (set! b 2) (+ a b))");
 }
 
-void test_eval(shared_ptr<LispVal> a, shared_ptr<LispVal> b)
-{
-    auto e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
-    e->env_map["+"] = make_shared<Procedure>(sucheme::add);
-    e->env_map["="] = make_shared<Procedure>(sucheme::eq);
-    e->env_map["-"] = make_shared<Procedure>(sucheme::sub);
-    e->env_map["*"] = make_shared<Procedure>(sucheme::mul);
-    e->env_map["else"] = make_shared<Bool>(true);
-        
-    EXPECT_EQ(a->show(),b->eval(e)->show());
-}
-
-TEST(Eval, Plus)
-{
-    test_eval(parse("3"), parse("(+ 1 2)"));
-    test_eval(parse("8"), parse("(+ 1 2 5)"));
-    test_eval(parse("15"), parse("(+ (+ 1 4) (+ 1 4 5))"));
-}
-
-TEST(Eval, Lambda)
-{
-    test_eval(parse("4"), parse("((lambda (x) (+ 1 x)) 3)"));
-}
-
-TEST(Eval, Cond)
-{
-    test_eval(parse("1"), parse("(cond (#t 1))"));
-    test_eval(parse("2"), parse("(cond (#f 1) (#t 2) (#f 1))"));
-    test_eval(parse("4"), parse("(cond (#f 1) (#f 2) (#t 4))"));
-}
-
-TEST(Eval, Rec)
-{
-//    test_eval(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 3))"), parse("6"));
-//    test_eval(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1) ((= 1 x) 1) (#t (+ (f (- x 1)) (f (- x 2))))))))(f 20))"), parse("10946"));
-}
 
 TEST(Cps, IsSimple)
 {
@@ -135,10 +103,10 @@ TEST(Cps, IsSimple)
     e->env_map["print"] = make_shared<Procedure>(sucheme::print);
 
     EXPECT_EQ(true, e->have("+"));
-    EXPECT_EQ(false, e->have("f"));
+    EXPECT_EQ(false, (bool)e->have("f"));
     EXPECT_EQ(true, is_simple(parse("+"), *e));
     EXPECT_EQ(true, is_simple(parse("3"), *e));
-    EXPECT_EQ(false, is_simple(parse("f"), *e));
+    EXPECT_EQ(false, (bool)is_simple(parse("f"), *e));
     EXPECT_EQ(true, is_simple(parse("(+ 1 3)"), *e));
 }
 
@@ -151,8 +119,8 @@ void test_cps(shared_ptr<LispVal> a, shared_ptr<LispVal> b, shared_ptr<LispVal> 
     e->env_map["*"] = make_shared<Procedure>(sucheme::mul);
     e->env_map["else"] = make_shared<Bool>(true);
     e->env_map["print"] = make_shared<Procedure>(sucheme::print);
-        
-    EXPECT_EQ(a->show(),cps(b, cont, *e)->show());
+
+    EXPECT_EQ(show(a),show(cps(b, cont, *e)));
 }
 
 
@@ -168,7 +136,7 @@ TEST(Cps, simple)
     e->env_map["else"] = make_shared<Bool>(true);
     e->env_map["print"] = make_shared<Procedure>(sucheme::print);
 
-    cerr << cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("C"), *e)->show() << endl;
-
-    cerr << cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("print"),*e)->eval(e)->show()<< endl;
+    cerr << show(cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("C"), *e)) << endl;
+//    cerr << cps(parse("(letrec ((f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x))))))(f 2))"), parse("print"),*e)->eval(e)->show()<< endl;
 }
+

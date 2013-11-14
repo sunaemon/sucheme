@@ -7,7 +7,7 @@ TESTS_ENVIRONMENT = GTEST_SOURCE_DIR="$(srcdir)/test" \
                     GTEST_BUILD_DIR="$(top_builddir)/test"
 
 check_PROGRAMS= test-sucheme
-test_sucheme_SOURCES = parser-test.cpp gtest/gtest-all.cc gtest/gtest_main.cc
+test_sucheme_SOURCES = parser-test.cpp eval-test.cpp gtest/gtest-all.cc gtest/gtest_main.cc
 test_sucheme_LDADD = $(top_builddir)/src/libsucheme.la
 
 CLEANFILES = core

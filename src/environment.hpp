@@ -4,6 +4,7 @@
 #include <exception>
 #include <string>
 #include "exceptions.hpp"
+#include <iostream>
 
 namespace sucheme
 {
@@ -13,6 +14,8 @@ namespace sucheme
     using std::move;
     using std::unique_ptr;
     using std::map;
+    using std::cerr;
+    using std::endl;
 
     struct LispVal;
 
@@ -29,12 +32,15 @@ namespace sucheme
             auto i = env_map.find(name);
 
             if(i != env_map.end()) {
-                return (*i).second;
+                return i->second;
             } else {
                 if(parent)
                     return parent->lookup(name);
-                else
+                else {
+                    //for(auto &i : env_map)
+                    //    cerr << i.first << endl;
                     throw unbouded_variable("unbouded_variable:" + name);
+                }
             }
         }
         
@@ -42,6 +48,19 @@ namespace sucheme
             env_map[name] = value; //copy
         }
 
-        Environment(const shared_ptr<Environment> parent) : parent(parent) {}
+        void set(const string &name, const shared_ptr<LispVal> &value) {
+            auto i = env_map.find(name);
+
+            if(i != env_map.end()) {
+                i->second = value; // copy
+            } else {
+                if(parent)
+                    parent->set(name, value);
+                else
+                    throw unbouded_variable("unbouded_variable:" + name);
+            }
+        }
+
+        Environment(const shared_ptr<Environment> &parent) : parent(parent) {}
     };
 }

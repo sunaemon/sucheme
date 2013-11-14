@@ -1,50 +1,52 @@
 #include "parser.hpp"
 #include <sstream>
 #include <iostream>
-#include <assert.h>
 #include <memory>
 #include "exceptions.hpp"
+#include <stdio.h>
 
 namespace sucheme {
     using std::dynamic_pointer_cast;
     using std::static_pointer_cast;
+    using std::cerr;
+    using std::endl;
 
-    inline bool whitespace(wchar_t c) {
-        return c==' ' || c == '\n' || c==0;
+    bool whitespace(wchar_t c) {
+        return c==' ' || c == '\n';
     }
 
-    inline bool delimiter(wchar_t c) {
-        return whitespace(c) || c=='(' || c==')' || c=='"' || c==';';
+    bool delimiter(wchar_t c) {
+        return whitespace(c) || c=='(' || c==')' || c=='"' || c==';' || c==0;
     }
 
-    inline bool digit(wchar_t c) {
+    bool digit(wchar_t c) {
         return '0' <= c && c <= '9';
     }
 
-    inline bool str_in(const wchar_t *str, wchar_t c)
+    bool str_in(const wchar_t *str, wchar_t c)
     {
-        while(*++str)
-            if(*str==c)
+        while(*str)
+            if(*str++==c)
                 return true;
         return false;
     }
 
-    inline bool letter(wchar_t c)
+    bool letter(wchar_t c)
     {
         return ('a' <= c && c<='z') || ('A' <= c && c<='Z');
     }
 
-    inline bool initial(wchar_t c) {
+    bool initial(wchar_t c) {
         const wchar_t *special_initial = L"!$%&*/:<=>?^_;~";
         return str_in(special_initial, c) || letter(c);
     }
 
-    inline bool subsequent(wchar_t c) {
+     bool subsequent(wchar_t c) {
         const wchar_t *special_subsequent = L"+-.@";
         return initial(c) || digit(c) || str_in(special_subsequent, c);
     }
 
-    inline std::tuple<int,int> parse_int(const std::string &s, int p) {
+    std::tuple<int,int> parse_int(const std::string &s, int p) {
         int64_t ret=0;
 
         while(digit(s[p])) {
@@ -76,10 +78,10 @@ namespace sucheme {
         }else if(s[p] == '-' || s[p] == '+') {
             if(delimiter(s[p+1])) {
                 if(s[p] == '+') {
-                    return make_tuple<std::shared_ptr<LispVal>, int>(make_shared<Symbol>("+"), p+1);
+                    return make_tuple(make_shared<Symbol>("+"), p+1);
                 }
                 else if(s[p] == '-')
-                    return make_tuple<std::shared_ptr<LispVal>, int>(make_shared<Symbol>("-"), p+1);
+                    return make_tuple(make_shared<Symbol>("-"), p+1);
             }
 
             int64_t ret=0;
@@ -157,14 +159,23 @@ namespace sucheme {
             else
                 throw std::exception();
         }
-        std::cerr << s << " " << s[p] << " " << p << std::endl;
 
-        throw not_implemented();
+        {
+            char buf[256];
+            if(s[p])
+                sprintf(buf, "unsupported_grammer:cannot understand %c at %d in %s", s[p], p, s.c_str());
+            else
+                sprintf(buf, "unsupported_grammer:unexpected eof at %d in %s", p, s.c_str());
+            throw unsupported_grammer(buf);
+        }
     }
 
     shared_ptr<LispVal> parse(const string &s) {
         auto ret = PExpr(s);
-        assert(get<1>(ret) > 0 && s.length() == (unsigned int)get<1>(ret));
+        if(! (get<1>(ret) > 0 && s.length() == (unsigned int)get<1>(ret))) {
+            cerr << "input:" << s.length() << endl;
+            cerr << "parsed:" << get<1>(ret) << endl;
+        }
         return move(get<0>(ret));
     }
 }

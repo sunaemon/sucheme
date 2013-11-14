@@ -1,10 +1,11 @@
 #pragma once
 #include "exceptions.hpp"
 #include <sstream>
-
+#include "show.hpp"
 #define dump(x) (std::cerr << #x" : " << x << std::endl)
 
 namespace sucheme {
+    
     template <class T, class ...Args>
     inline std::unique_ptr<T> make_unique(Args &&...args)
     {
@@ -18,7 +19,8 @@ namespace sucheme {
             return std::move(ret);
         else {
             std::stringstream ost;
-            ost <<  "bad_cast: tried to convert " << typeid(*a.get()).name() << " to " << typeid(T0).name();
+            ost <<  "bad_cast: tried to convert " << typeid(*a.get()).name() << " to " << typeid(T0).name() << "\n";
+            ost << "value:" << show(a);
             throw bad_lisp_cast(ost.str());
         }
     }

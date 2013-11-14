@@ -9,65 +9,63 @@ namespace sucheme{
     using std::stringstream;
     using std::to_string;
 
-    string LispVal::show() const {
-        throw std::exception();
-    }
-
-    string Number::show() const  {
-        return to_string(this->integer);
-    }
-
-    string Symbol::show() const {
-        return this->name;
-    }
-
-    string Pair::show() const {
-        vector<string> buf;
-        
-        auto *next=this;
-
-        for(;;){
-            buf.push_back(next->car->show());
-
-            if(typeid(*next->cdr.get()) != typeid(Pair))
-                break;
-
-            next = static_cast<Pair*>(next->cdr.get());
-        }
-
-        if(typeid(*next->cdr.get()) == typeid(Empty)) {
-            stringstream ost;
-            ost << "(";
-            bool flag = false;
-            for(auto &s : buf) {
-                if(flag)
-                    ost << " ";
-                else
-                    flag = true;
-                ost << s;
+    string show(const shared_ptr<LispVal> &val)
+    {
+        if(auto empty = dynamic_pointer_cast<Empty>(val))
+            return "()";
+        if(auto b = dynamic_pointer_cast<Bool>(val))
+            return b->value ? "#t" : "#f";
+        if(auto num = dynamic_pointer_cast<Number>(val))
+            return to_string(num->integer);
+        if(auto symbol = dynamic_pointer_cast<Symbol>(val))
+            return symbol->name;
+        if(auto p = dynamic_pointer_cast<Pair>(val)) {
+            vector<string> buf;
+            
+            Pair *next=p.get();
+            
+            for(;;){
+                buf.push_back(show(next->car));
+                
+                if(typeid(*next->cdr.get()) != typeid(Pair))
+                    break;
+                
+                next = static_cast<Pair*>(next->cdr.get());
             }
-            ost << ")";
+            
+            if(typeid(*next->cdr.get()) == typeid(Empty)) {
+                stringstream ost;
+                ost << "(";
+                bool flag = false;
+                for(auto &s : buf) {
+                    if(flag)
+                        ost << " ";
+                    else
+                        flag = true;
+                    ost << s;
+                }
+                ost << ")";
+                return ost.str();
+            } else {
+                throw std::exception();
+            }
+        }
+        if(auto proc = dynamic_pointer_cast<Procedure>(val)) {
+            stringstream ost;
+            ost << "<Procedure 0x" << std::hex << (unsigned long)proc->func << ">";
             return ost.str();
-        } else {
-            throw std::exception();
         }
-    }
-    
-    string Procedure::show() const {
-        stringstream ost;
-        ost << "<Procedure 0x" << std::hex << (unsigned long)func << ">";
-        return ost.str();
-    }
-
-    string LambdaProcedure::show() const {
-        stringstream ost;
-        ost << "<Lambda Procedure (lambda (";
-        for(auto &n : formals) {
-            ost << n << " ";
+        if(auto lambdaproc = dynamic_pointer_cast<LambdaProcedure>(val)) {
+            stringstream ost;
+            ost << "<Lambda Procedure (lambda (";
+            for(auto &n : lambdaproc->formals) {
+                ost << n << " ";
+            }
+            ost << ") ";
+            ost << show(lambdaproc->body);
+            ost << ")>";
+            return ost.str();
         }
-        ost << ") ";
-        ost << body->show();
-        ost << ")>";
-        return ost.str();
+        throw not_implemented();
     }
 }

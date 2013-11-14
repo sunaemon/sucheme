@@ -20,18 +20,12 @@ namespace sucheme {
 
     struct LispVal
     {
-        virtual string show() const = 0;
-        virtual shared_ptr<LispVal> eval(shared_ptr<Environment>&) = 0;
         virtual bool operator==(const LispVal&) const = 0;
     };
 
     struct Number : LispVal, std::enable_shared_from_this<Number>
     {
         int integer;
-        string show() const override;
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override {
-            return shared_from_this();
-        }
         bool operator==(const LispVal &val) const override{
             auto a = dynamic_cast<const Number*>(&val);
             return a && a->integer == integer;
@@ -43,10 +37,6 @@ namespace sucheme {
     struct Bool : LispVal, std::enable_shared_from_this<Bool>
     {
         bool value;
-        string show() const override { return value ? "#t" : "#f"; }
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override {
-            return shared_from_this();
-        }
 
         bool operator==(const LispVal &val) const override{
             auto a = dynamic_cast<const Bool*>(&val);
@@ -60,9 +50,6 @@ namespace sucheme {
     struct Symbol : LispVal, std::enable_shared_from_this<Symbol>
     {
         string name;
-        string show() const override;
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override;
-
         bool operator==(const LispVal&val) const override{
             auto a = dynamic_cast<const Symbol*>(&val);
             return a && a->name == name;
@@ -76,9 +63,6 @@ namespace sucheme {
         shared_ptr<LispVal> car;
         shared_ptr<LispVal> cdr;
 
-        string show() const override;
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override;
-
         bool operator==(const LispVal &val) const override{
             auto a = dynamic_cast<const Pair*>(&val);
             return a && a->car == car && a->cdr == cdr;
@@ -90,11 +74,6 @@ namespace sucheme {
 
     struct Empty : LispVal, std::enable_shared_from_this<Empty>
     {
-        string show () const override { return "()"; }
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override {
-            return shared_from_this();
-        }
-
         bool operator==(const LispVal&val) const override{
             auto a = dynamic_cast<const Empty*>(&val);
             return a;
@@ -109,12 +88,6 @@ namespace sucheme {
 
         subr func;
         
-        string show() const override;
-        
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override {
-            return shared_from_this();
-        }
-
         bool operator==(const LispVal &val) const override{
             auto a = dynamic_cast<const Procedure*>(&val);
             return a && a->func == func;
@@ -133,17 +106,26 @@ namespace sucheme {
         shared_ptr<Pair> body;
         shared_ptr<Environment> environment;
         
-        string show() const override;
-        
-        shared_ptr<LispVal> eval(shared_ptr<Environment>&) override {
-            return shared_from_this();
-        }
-
         bool operator==(const LispVal &) const override{
             throw not_implemented();
         }
 
         LambdaProcedure(const vector<string> &formals,
+                        const shared_ptr<Pair> &body,
+                        const shared_ptr<Environment> &environment) :
+            formals(formals), body(body), environment(environment) {}
+    };
+    struct LambdaMacro : LispVal, std::enable_shared_from_this<LambdaMacro>
+    {
+        vector<string> formals;
+        shared_ptr<Pair> body;
+        shared_ptr<Environment> environment;
+        
+        bool operator==(const LispVal &) const override{
+            throw not_implemented();
+        }
+
+        LambdaMacro(const vector<string> &formals,
                         const shared_ptr<Pair> &body,
                         const shared_ptr<Environment> &environment) :
             formals(formals), body(body), environment(environment) {}

@@ -1,5 +1,7 @@
 #include "functions.hpp"
 #include <iostream>
+#include "show.hpp"
+#include "list.hpp"
 
 namespace sucheme{
     using std::string;
@@ -56,9 +58,32 @@ namespace sucheme{
 
    shared_ptr<LispVal> print(const vector<shared_ptr<LispVal> > &arg) {
         for(auto &i : arg) 
-            cout << i->show();
+            cout << show(i);
         cout << endl;
         return make_shared<Empty>();
     }
 
+   shared_ptr<LispVal> car(const vector<shared_ptr<LispVal> > &arg) {
+       if(arg.size() != 1)
+            throw invalid_aplication("invalid_aplication:car" + arg.size());
+       return dcast<Pair>(arg[0])->car;
+    }
+
+   shared_ptr<LispVal> cdr(const vector<shared_ptr<LispVal> > &arg) {
+       if(arg.size() != 1)
+            throw invalid_aplication("invalid_aplication:car" + arg.size());
+       return dcast<Pair>(arg[0])->cdr;
+    }
+
+   shared_ptr<LispVal> cons(const vector<shared_ptr<LispVal> > &arg) {
+       if(arg.size() != 2)
+            throw invalid_aplication("invalid_aplication:cons" + arg.size());
+       return cons(arg[0], arg[1]);
+    }
+
+   shared_ptr<LispVal> null_is(const vector<shared_ptr<LispVal> > &arg) {
+       if(arg.size() != 1)
+            throw invalid_aplication("invalid_aplication:null?" + arg.size());
+       return make_shared<Bool>((bool)dynamic_pointer_cast<Empty>(arg[0]));
+    }
 }

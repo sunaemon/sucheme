@@ -22,5 +22,8 @@ namespace sucheme{
     EXEPT(malformed_define);
     EXEPT(malformed_cond);
     EXEPT(malformed_letrec);
+    EXEPT(malformed_set);
+    EXEPT(malformed_quote);
+    EXEPT(unsupported_grammer);
 #undef EXEPT
 }

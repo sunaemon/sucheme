@@ -40,7 +40,7 @@ namespace sucheme{
 
     shared_ptr<LispVal> cps(const shared_ptr<LispVal> &program, const shared_ptr<LispVal> &cont, const Environment &e)
     {
-        cerr << "cps(\n" << program->show() << "\n" << cont->show() << "\n)" << endl << endl;
+        //cerr << "cps(\n" << program->show() << "\n" << cont->show() << "\n)" << endl << endl;
         shared_ptr<LispVal> ret;
 
         if(auto num = dynamic_pointer_cast<Number>(program))
@@ -137,7 +137,7 @@ namespace sucheme{
                 
             }
         }
-        cerr << "cps(\n" << program->show() << ",\n" << cont->show() << "\n)=\n" << ret->show() << endl << endl;
+        //cerr << "cps(\n" << program->show() << ",\n" << cont->show() << "\n)=\n" << ret->show() << endl << endl;
         return ret;
         throw not_implemented();
     }
