@@ -32,7 +32,7 @@ namespace sucheme{
         if(auto b = dynamic_pointer_cast<Bool>(program))
             return true;
         if(auto symbol = dynamic_pointer_cast<Symbol>(program))
-            return e.have(symbol->name);
+            return have(&e, symbol->name);
         if(auto p = dynamic_pointer_cast<Pair>(program))
             return is_simple(p->car, e) && is_simple(p->cdr, e);
         throw not_implemented();

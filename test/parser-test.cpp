@@ -102,8 +102,8 @@ TEST(Cps, IsSimple)
     e->env_map["else"] = make_shared<Bool>(true);
     e->env_map["print"] = make_shared<Procedure>(sucheme::print);
 
-    EXPECT_EQ(true, e->have("+"));
-    EXPECT_EQ(false, (bool)e->have("f"));
+    EXPECT_EQ(true, have(e.get(), "+"));
+    EXPECT_EQ(false, (bool)have(e.get(), "f"));
     EXPECT_EQ(true, is_simple(parse("+"), *e));
     EXPECT_EQ(true, is_simple(parse("3"), *e));
     EXPECT_EQ(false, (bool)is_simple(parse("f"), *e));
