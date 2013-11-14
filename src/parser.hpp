@@ -18,8 +18,13 @@ namespace sucheme {
     bool initial(wchar_t c);
     bool subsequent(wchar_t c);
 
-    std::tuple<int,int> parse_int(const std::string &s, int p);
-    std::tuple<shared_ptr<LispVal>, int> PExpr(const string &s, int32_t p = 0);
-    std::shared_ptr<LispVal> parse(const string &s);
+    struct parse_result
+    {
+        shared_ptr<LispVal> val;
+        int pos;
+    };
 
+    std::tuple<int,int> parse_int(const std::string &s, int p);
+    parse_result PExpr(const string &s, int32_t p = 0);
+    shared_ptr<LispVal> parse(const string &s);
 }
