@@ -25,15 +25,15 @@ class EvalTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
-    define(e.get(), "+", make_shared<Procedure>(sucheme::add));
-    define(e.get(), "=", make_shared<Procedure>(sucheme::eq));
-    define(e.get(), "*", make_shared<Procedure>(sucheme::mul));
-    define(e.get(), "-", make_shared<Procedure>(sucheme::sub));
-    define(e.get(), "car", make_shared<Procedure>(sucheme::car));
-    define(e.get(), "cdr", make_shared<Procedure>(sucheme::cdr));
-    define(e.get(), "print", make_shared<Procedure>(sucheme::print));
-    define(e.get(), "null?", make_shared<Procedure>(sucheme::null_is));
-    define(e.get(), "else", make_shared<Bool>(true));
+    env_define(e.get(), "+", make_shared<Procedure>(sucheme::add));
+    env_define(e.get(), "=", make_shared<Procedure>(sucheme::eq));
+    env_define(e.get(), "*", make_shared<Procedure>(sucheme::mul));
+    env_define(e.get(), "-", make_shared<Procedure>(sucheme::sub));
+    env_define(e.get(), "car", make_shared<Procedure>(sucheme::car));
+    env_define(e.get(), "cdr", make_shared<Procedure>(sucheme::cdr));
+    env_define(e.get(), "print", make_shared<Procedure>(sucheme::print));
+    env_define(e.get(), "null?", make_shared<Procedure>(sucheme::null_is));
+    env_define(e.get(), "else", make_shared<Bool>(true));
 
     eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
     eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);

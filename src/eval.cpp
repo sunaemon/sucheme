@@ -24,7 +24,7 @@ namespace sucheme{
         if(auto b = dynamic_pointer_cast<Bool>(a))
             return b->shared_from_this();
         if(auto symbol = dynamic_pointer_cast<Symbol>(a))
-            return lookup(e.get(), symbol->name);
+            return env_lookup(e.get(), symbol->name);
         if(auto p = dynamic_pointer_cast<Pair>(a)) {
             vector<shared_ptr<LispVal> > args = ListToVector(dcast<Pair>(p->cdr));
 
@@ -74,7 +74,7 @@ namespace sucheme{
                     throw malformed_define();
 
                 if(auto symbol = dynamic_pointer_cast<Symbol>(args[0])) {
-                    define(e.get(), symbol->name, eval(args[1],e));
+                    env_define(e.get(), symbol->name, eval(args[1],e));
                     ret = symbol;
                 }else
                     throw malformed_define();
@@ -84,14 +84,14 @@ namespace sucheme{
 
                 if(auto symbol = dynamic_pointer_cast<Symbol>(args[0])) {
                     auto la = dcast<LambdaProcedure>(eval(args[1],e));
-                    define(e.get(), symbol->name, make_shared<LambdaMacro>(la->formals, la->body, la->environment));
+                    env_define(e.get(), symbol->name, make_shared<LambdaMacro>(la->formals, la->body, la->environment));
                     ret = symbol;
                 }else
                     throw malformed_define();
             } else if(f && f->name == "set!") {
                 if(args.size() != 2)
                     throw malformed_set("malformed_set:args expected 2 but get " + to_string(args.size()));
-                set(e.get(), dcast<Symbol>(args[0])->name, eval(args[1], e));
+                env_set(e.get(), dcast<Symbol>(args[0])->name, eval(args[1], e));
                 ret = nil();
             } else if(f && f->name == "begin") {
                 for(auto &i : args)
@@ -119,7 +119,7 @@ namespace sucheme{
                         throw not_implemented("wrong number of args");
                 
                     for(unsigned int i=0; i<args.size(); i++)
-                        define(e_lambda.get(), lambda->formals[i], eval_args[i]);
+                        env_define(e_lambda.get(), lambda->formals[i], eval_args[i]);
                 
                     ret = eval(lambda->body, e_lambda);
                 } else if(auto lambda = dynamic_pointer_cast<LambdaMacro>(callee)) {
@@ -129,7 +129,7 @@ namespace sucheme{
                         throw not_implemented("wrong number of args");
                 
                     for(unsigned int i=0; i<args.size(); i++)
-                        define(e_lambda.get(), lambda->formals[i], args[i]);
+                        env_define(e_lambda.get(), lambda->formals[i], args[i]);
                 
                     ret = eval(lambda->body, e_lambda);
                 } else

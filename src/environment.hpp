@@ -19,16 +19,25 @@ namespace sucheme
 
     struct LispVal;
 
+    struct Environment_Map
+    {
+        shared_ptr<Environment_Map> g;
+        shared_ptr<Environment_Map> l;
+        
+        string name;
+        shared_ptr<LispVal> val;
+    };
+
     struct Environment {
         shared_ptr<Environment> parent;
 
-        map<string, shared_ptr<LispVal> > env_map;
+        Environment_Map env_map;
 
         Environment(const shared_ptr<Environment> &parent) : parent(parent) {}
     };
 
-    void set(Environment *e, const string &name, const shared_ptr<LispVal> &value);
-    bool have(const Environment *e, const string &name);
-    shared_ptr<LispVal> lookup(const Environment *e, const string &name);
-    void define(Environment *e, const string &name, const shared_ptr<LispVal> &value);
+    bool env_have(const Environment *e, const string &name);
+    shared_ptr<LispVal> env_lookup(const Environment *e, const string &name);
+    void env_define(Environment *e, const string &name, const shared_ptr<LispVal> &value);
+    void env_set(Environment *e, const string &name, const shared_ptr<LispVal> &value);
 }
