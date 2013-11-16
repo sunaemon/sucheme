@@ -14,18 +14,18 @@ namespace sucheme{
     using std::cout;
     using std::endl;
  
-   shared_ptr<LispVal> add(const vector<shared_ptr<LispVal> > &arg) {
+   shared_ptr<LispVal> add(const vector<LispVal*> &arg) {
         int ret=0;
         for(auto &i : arg) 
-            ret += dcast<Number>(i)->integer;
+            ret += dcast<Number>(&i)->integer;
 
         return make_shared<Number>(ret);
     }
 
-   shared_ptr<LispVal> mul(const vector<shared_ptr<LispVal> > &arg) {
+   shared_ptr<LispVal> mul(const vector<LispVal*> &arg) {
         int ret=1;
         for(auto &i : arg) 
-            ret *= dcast<Number>(i)->integer;
+            ret *= dcast<Number>(*i)->integer;
 
         return make_shared<Number>(ret);
     }

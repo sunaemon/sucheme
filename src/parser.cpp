@@ -4,6 +4,7 @@
 #include <memory>
 #include "exceptions.hpp"
 #include <stdio.h>
+#include "gc.hpp"
 
 namespace sucheme {
     using std::dynamic_pointer_cast;
@@ -55,7 +56,7 @@ namespace sucheme {
         return std::make_tuple(ret, p);
     }
 
-    inline parse_result make_parse_result(const shared_ptr<LispVal> val, int pos)
+    inline parse_result make_parse_result(LispVal *val, int pos)
     {
         return {val, pos};
     }
@@ -69,13 +70,13 @@ namespace sucheme {
             if(s[p] == 't') {
                 p++;
                 if(delimiter(s[p]))
-                    return make_parse_result(make_shared<Bool>(true), p);
+                    return make_parse_result(alloc<Bool>(true), p);
                 else
                     throw unsupported_grammer();
             } else if(s[p] == 'f') {
                 p++;
                 if(delimiter(s[p]))
-                    return make_parse_result(make_shared<Bool>(false), p);
+                    return make_parse_result(alloc<Bool>(false), p);
                 else 
                     throw unsupported_grammer();
             } else
@@ -83,10 +84,10 @@ namespace sucheme {
         }else if(s[p] == '-' || s[p] == '+') {
             if(delimiter(s[p+1])) {
                 if(s[p] == '+') {
-                    return make_parse_result(make_shared<Symbol>("+"), p+1);
+                    return make_parse_result(alloc<Symbol>("+"), p+1);
                 }
                 else if(s[p] == '-')
-                    return make_parse_result(make_shared<Symbol>("-"), p+1);
+                    return make_parse_result(alloc<Symbol>("-"), p+1);
             }
 
             int64_t ret=0;
@@ -102,7 +103,7 @@ namespace sucheme {
 
             std::tie(ret,p) = parse_int(s,p);
             if(delimiter(s[p]))
-                return make_parse_result(make_shared<Number>(sig?ret:-ret), p);
+                return make_parse_result(alloc<Number>(sig?ret:-ret), p);
             else
                 throw std::exception();
         }
@@ -111,7 +112,7 @@ namespace sucheme {
             int64_t ret=0;
             std::tie(ret,p) = parse_int(s,p);
             if(delimiter(s[p]))
-                return make_parse_result(make_shared<Number>(ret), p);
+                return make_parse_result(alloc<Number>(ret), p);
             else
                 throw std::exception();
         }
@@ -119,15 +120,15 @@ namespace sucheme {
         if(s[p] == '(') {
             p++;
             if(s[p] == ')')
-                return make_parse_result(make_shared<Empty>(), p+1);
+                return make_parse_result(alloc<Empty>(), p+1);
 
-            auto list = make_shared<Pair>();
-            shared_ptr<Pair> next(list);
+            auto list = alloc<Pair>();
+            Pair *next(list);
 
             while(whitespace(s[p])) p++;
 
             auto ret = PExpr(s, p);
-            auto a = move(ret.val);
+            auto a = ret.val;
         
             list->car = a;
             p = ret.pos;
@@ -139,26 +140,26 @@ namespace sucheme {
 
                 auto ret = PExpr(s, p);
 
-                next->cdr = make_shared<Pair>();
+                next->cdr = alloc<Pair>();
 
-                next = static_pointer_cast<Pair>(next->cdr);
+                next = static_cast<Pair*>(next->cdr);
 
-                next->car  = move(ret.val);
+                next->car  = ret.val;
 
                 p = ret.pos;
 
                 while(whitespace(s[p])) p++;
             }
-            next->cdr = make_shared<Empty>();
+            next->cdr = alloc<Empty>();
         
-            return make_parse_result(move(list), p+1);
+            return make_parse_result(list, p+1);
         }
 
         if(initial(s[p])) { // <initial> <subsequent>*
             int start = p;
             while(subsequent(s[++p])) {}
             if(delimiter(s[p]))
-                return make_parse_result(make_shared<Symbol>(string(&(s[start]), uint32_t(p - start))), p);
+                return make_parse_result(alloc<Symbol>(string(&(s[start]), uint32_t(p - start))), p);
             else
                 throw std::exception();
         }
@@ -173,12 +174,12 @@ namespace sucheme {
         }
     }
 
-    shared_ptr<LispVal> parse(const string &s) {
+    LispVal *parse(const string &s) {
         auto ret = PExpr(s);
         if(! (ret.pos > 0 && s.length() == (unsigned int)ret.pos)) {
             cerr << "input:" << s.length() << endl;
             cerr << "parsed:" << ret.pos << endl;
         }
-        return move(ret.val);
+        return ret.val;
     }
 }

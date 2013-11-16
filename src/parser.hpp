@@ -7,7 +7,6 @@
 #include "lispval.hpp"
 
 namespace sucheme {
-    using std::shared_ptr;
     using std::string;
 
     //bool whitespace(wchar_t);
@@ -20,11 +19,11 @@ namespace sucheme {
 
     struct parse_result
     {
-        shared_ptr<LispVal> val;
+        LispVal *val;
         int pos;
     };
 
     std::tuple<int,int> parse_int(const std::string &s, int p);
     parse_result PExpr(const string &s, int32_t p = 0);
-    shared_ptr<LispVal> parse(const string &s);
+    LispVal *parse(const string &s);
 }

@@ -9,13 +9,13 @@ namespace sucheme{
     using std::stringstream;
     using std::to_string;
 
-    string show(const shared_ptr<LispVal> &val)
+    string show(const LispVal *val)
     {
-        if(auto empty = dynamic_pointer_cast<Empty>(val))
+        if(auto empty = dynamic_cast<const Empty*>(val))
             return "()";
-        if(auto b = dynamic_pointer_cast<Bool>(val))
+        if(auto b = dynamic_cast<const Bool*>(val))
             return b->value ? "#t" : "#f";
-        if(auto num = dynamic_pointer_cast<Number>(val))
+        if(auto num = dynamic_cast<Number*>(val))
             return to_string(num->integer);
         if(auto symbol = dynamic_pointer_cast<Symbol>(val))
             return symbol->name;

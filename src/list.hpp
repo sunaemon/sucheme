@@ -13,7 +13,7 @@ namespace sucheme{
     using std::dynamic_pointer_cast;
 
    template<typename T>
-    void ListForeach(const shared_ptr<Pair> &list, T callback) {
+   void ListForeach(Pair *list, T callback) {
         Pair *l = list.get();
         Pair *ll;
 
@@ -28,30 +28,31 @@ namespace sucheme{
             throw improper_list();
     }
 
-    vector<shared_ptr<LispVal> > ListToVector(const shared_ptr<Pair> &list);
+    vector<LispVal*> ListToVector(const Pair* list);
 
-    inline shared_ptr<LispVal> make_list() {
-        return make_shared<Empty>();
+    inline LispVal *make_list() {
+        return alloc<Empty>();
+    }
+
+    inline Pair* cons(LispVal *a, ispVal *l)
+    {
+        return alloc<Pair>(a, l);
     }
 
     template<class... Rest>
-    shared_ptr<LispVal> make_list(const shared_ptr<LispVal> &val, const Rest&... rest)
+    LispVal* make_list(const LispVal *val, const Rest&... rest)
     {
-        return make_shared<Pair>(val, make_list(rest...));
+        return cons(val, make_list(rest...));
     }
 
-    inline shared_ptr<Empty> nil()
+    inline Empty *nil()
     {
-        return make_shared<Empty>();
+        return alloc<Empty>();
     }
 
-    inline shared_ptr<Pair> cons(const shared_ptr<LispVal> &a, const shared_ptr<LispVal> &l)
-    {
-        return make_shared<Pair>(a, l);
-    }
 
-    inline shared_ptr<Symbol> make_symbol(const string &name)
+    inline Symbol> *make_symbol(const string &name)
     {
-        return make_shared<Symbol>(name);
+        return alloc<Symbol>(name);
     }
 }

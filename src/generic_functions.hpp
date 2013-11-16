@@ -12,9 +12,9 @@ namespace sucheme {
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
-    template<typename T0,typename T1> std::shared_ptr<T0> dcast(const std::shared_ptr<T1> &a)
+    template<typename T0,typename T1> T0* dcast(T1 *a)
     {
-        auto ret = std::dynamic_pointer_cast<T0>(a);
+        auto ret = dynamic_cast<T0*>(a);
         if(ret)
             return std::move(ret);
         else {
@@ -25,4 +25,3 @@ namespace sucheme {
         }
     }
 }
-
