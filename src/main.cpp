@@ -3,7 +3,7 @@
 #include "parser.hpp"
 #include "eval.hpp"
 #include "functions.hpp"
-
+#include "gc.hpp"
 #include <iostream>
 
 using namespace std;
@@ -16,16 +16,16 @@ int main(int, char**)
     using_history();
     read_history(".my_history");
 
-    auto e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
-    env_define(e.get(), "+", make_shared<Procedure>(sucheme::add));
-    env_define(e.get(), "=", make_shared<Procedure>(sucheme::eq));
-    env_define(e.get(), "*", make_shared<Procedure>(sucheme::mul));
-    env_define(e.get(), "-", make_shared<Procedure>(sucheme::sub));
-    env_define(e.get(), "car", make_shared<Procedure>(sucheme::car));
-    env_define(e.get(), "cdr", make_shared<Procedure>(sucheme::cdr));
-    env_define(e.get(), "print", make_shared<Procedure>(sucheme::print));
-    env_define(e.get(), "null?", make_shared<Procedure>(sucheme::null_is));
-    env_define(e.get(), "else", make_shared<Bool>(true));
+    auto e = alloc<Environment>(nullptr);
+    env_define(e, "+", alloc<Procedure>(sucheme::add));
+    env_define(e, "=", alloc<Procedure>(sucheme::eq));
+    env_define(e, "*", alloc<Procedure>(sucheme::mul));
+    env_define(e, "-", alloc<Procedure>(sucheme::sub));
+    env_define(e, "car", alloc<Procedure>(sucheme::car));
+    env_define(e, "cdr", alloc<Procedure>(sucheme::cdr));
+    env_define(e, "print", alloc<Procedure>(sucheme::print));
+    env_define(e, "null?", alloc<Procedure>(sucheme::null_is));
+    env_define(e, "else", alloc<Bool>(true));
 
     eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
     eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);

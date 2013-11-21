@@ -38,15 +38,6 @@ namespace sucheme {
         Symbol(const string &name) : name(name) {}
     };
 
-    struct Pair : LispVal
-    {
-        LispVal *car;
-        LispVal *cdr;
-
-        Pair(LispVal *car, LispVal *cdr) : car(car), cdr(cdr) {}
-        Pair() {}
-    };
-
     struct Empty : LispVal
     {
         Empty() {}
@@ -63,6 +54,15 @@ namespace sucheme {
         }
 
         Procedure(const subr &func) : func(func) {}
+    };
+
+    struct Pair : LispVal
+    {
+        LispVal *car;
+        LispVal *cdr;
+
+        Pair(LispVal *car, LispVal *cdr) : car(car), cdr(cdr) {}
+        Pair() {}
     };
 
     struct LambdaProcedure : LispVal

@@ -14,76 +14,76 @@ namespace sucheme{
     using std::cout;
     using std::endl;
  
-   shared_ptr<LispVal> add(const vector<LispVal*> &arg) {
+    LispVal* add(const vector<LispVal*> &arg) {
         int ret=0;
         for(auto &i : arg) 
-            ret += dcast<Number>(&i)->integer;
+            ret += dcast_ex<Number>(i)->integer;
 
-        return make_shared<Number>(ret);
+        return alloc<Number>(ret);
     }
 
-   shared_ptr<LispVal> mul(const vector<LispVal*> &arg) {
+   LispVal* mul(const vector<LispVal*> &arg) {
         int ret=1;
         for(auto &i : arg) 
-            ret *= dcast<Number>(*i)->integer;
+            ret *= dcast_ex<Number>(i)->integer;
 
-        return make_shared<Number>(ret);
+        return alloc<Number>(ret);
     }
 
-   shared_ptr<LispVal> sub(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* sub(const vector<LispVal*> &arg) {
         if(arg.size() <= 1)
             throw invalid_aplication("invalid_aplication:sub");
 
-        int ret=dcast<Number>(arg[0])->integer;
+        int ret=dcast_ex<Number>(arg[0])->integer;
 
         for(auto i = arg.begin()+1; i<arg.end(); i++) 
-            ret -= dcast<Number>(*i)->integer;
+            ret -= dcast_ex<Number>(*i)->integer;
 
-        return make_shared<Number>(ret);
+        return alloc<Number>(ret);
     }
 
-   shared_ptr<LispVal> eq(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* eq(const vector<LispVal*> &arg) {
        if(arg.size() != 2)
             throw invalid_aplication("invalid_aplication:eq" + arg.size());
 
-        return make_shared<Bool>(dcast<Number>(arg[0])->integer == dcast<Number>(arg[1])->integer);
+        return alloc<Bool>(dcast_ex<Number>(arg[0])->integer == dcast_ex<Number>(arg[1])->integer);
     }
 
-   shared_ptr<LispVal> lt(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* lt(const vector<LispVal*> &arg) {
        if(arg.size() != 2)
            throw invalid_aplication("invalid_aplication:lt");
 
-       return make_shared<Bool>(dcast<Number>(arg[0])->integer < dcast<Number>(arg[1])->integer);
+       return alloc<Bool>(dcast_ex<Number>(arg[0])->integer < dcast_ex<Number>(arg[1])->integer);
     }
 
-   shared_ptr<LispVal> print(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* print(const vector<LispVal*> &arg) {
         for(auto &i : arg) 
             cout << show(i);
         cout << endl;
-        return make_shared<Empty>();
+        return alloc<Empty>();
     }
 
-   shared_ptr<LispVal> car(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* car(const vector<LispVal*> &arg) {
        if(arg.size() != 1)
             throw invalid_aplication("invalid_aplication:car" + arg.size());
-       return dcast<Pair>(arg[0])->car;
+       return dcast_ex<Pair>(arg[0])->car;
     }
 
-   shared_ptr<LispVal> cdr(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* cdr(const vector<LispVal*> &arg) {
        if(arg.size() != 1)
             throw invalid_aplication("invalid_aplication:car" + arg.size());
-       return dcast<Pair>(arg[0])->cdr;
+       return dcast_ex<Pair>(arg[0])->cdr;
     }
 
-   shared_ptr<LispVal> cons(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* cons(const vector<LispVal*> &arg) {
        if(arg.size() != 2)
             throw invalid_aplication("invalid_aplication:cons" + arg.size());
        return cons(arg[0], arg[1]);
     }
 
-   shared_ptr<LispVal> null_is(const vector<shared_ptr<LispVal> > &arg) {
+   LispVal* null_is(const vector<LispVal* > &arg) {
        if(arg.size() != 1)
             throw invalid_aplication("invalid_aplication:null?" + arg.size());
-       return make_shared<Bool>((bool)dynamic_pointer_cast<Empty>(arg[0]));
+       return alloc<Bool>((bool)dynamic_cast<Empty*>(arg[0]));
     }
 }

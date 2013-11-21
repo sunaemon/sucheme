@@ -5,44 +5,41 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "../src/parser.hpp"
-#include "../src/environment.hpp"
-#include "../src/functions.hpp"
-#include "../src/list.hpp"
-#include "../src/cps.hpp"
-#include "../src/eval.hpp"
-#include "../src/show.hpp"
-
-using namespace sucheme;
-using std::string;
-using std::shared_ptr;
+#include "parser.hpp"
+#include "environment.hpp"
+#include "functions.hpp"
+#include "list.hpp"
+#include "cps.hpp"
+#include "eval.hpp"
+#include "show.hpp"
+#include "gc.hpp"
 
 using namespace sucheme;
 using namespace std;
 
 class EvalTest : public ::testing::Test {
- 
- protected:
-  virtual void SetUp() {
-    e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
-    env_define(e.get(), "+", make_shared<Procedure>(sucheme::add));
-    env_define(e.get(), "=", make_shared<Procedure>(sucheme::eq));
-    env_define(e.get(), "*", make_shared<Procedure>(sucheme::mul));
-    env_define(e.get(), "-", make_shared<Procedure>(sucheme::sub));
-    env_define(e.get(), "car", make_shared<Procedure>(sucheme::car));
-    env_define(e.get(), "cdr", make_shared<Procedure>(sucheme::cdr));
-    env_define(e.get(), "print", make_shared<Procedure>(sucheme::print));
-    env_define(e.get(), "null?", make_shared<Procedure>(sucheme::null_is));
-    env_define(e.get(), "else", make_shared<Bool>(true));
-
-    eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
-    eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);
-    eval(parse("(define caar (lambda (x) (car (car x))))"),e);
-    eval(parse("(define cddr (lambda (x) (cdr (cdr x))))"),e);
-
-  }
+    
+protected:
+    virtual void SetUp() {
+        e = alloc<Environment>(nullptr);
+        env_define(e, "+", alloc<Procedure>(sucheme::add));
+        env_define(e, "=", alloc<Procedure>(sucheme::eq));
+        env_define(e, "*", alloc<Procedure>(sucheme::mul));
+        env_define(e, "-", alloc<Procedure>(sucheme::sub));
+        env_define(e, "car", alloc<Procedure>(sucheme::car));
+        env_define(e, "cdr", alloc<Procedure>(sucheme::cdr));
+        env_define(e, "print", alloc<Procedure>(sucheme::print));
+        env_define(e, "null?", alloc<Procedure>(sucheme::null_is));
+        env_define(e, "else", alloc<Bool>(true));
+        
+        eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
+        eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);
+        eval(parse("(define caar (lambda (x) (car (car x))))"),e);
+        eval(parse("(define cddr (lambda (x) (cdr (cdr x))))"),e);
+        
+    }
 public:
-   shared_ptr<Environment> e;
+    Environment *e;
 };
 
 #define EVAL_TEST(a,b) EXPECT_EQ(show(parse(a)), show(eval(parse(b),e)));
@@ -78,6 +75,7 @@ TEST_F(EvalTest, Rec)
     EVAL_TEST("3628800", "(f 10)");
     eval(parse("(define f (lambda (x) (cond ((= 0 x) 1) ((= 1 x) 1) (#t (+ (f (- x 1)) (f (- x 2)))))))"), e);
     EVAL_TEST("10946", "(f 20)");
+    EVAL_TEST("121393", "(f 25)");
 }
 
 TEST_F(EvalTest, functions)

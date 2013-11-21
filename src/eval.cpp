@@ -18,46 +18,44 @@ namespace sucheme{
     using std::dynamic_pointer_cast;
     using std::endl;
 
-    shared_ptr<LispVal> eval(const shared_ptr<LispVal> &a, shared_ptr<Environment> &e) {
-        if(auto num = dynamic_pointer_cast<Number>(a))
-            return num->shared_from_this();
-        if(auto b = dynamic_pointer_cast<Bool>(a))
-            return b->shared_from_this();
-        if(auto symbol = dynamic_pointer_cast<Symbol>(a))
-            return env_lookup(e.get(), symbol->name);
-        if(auto p = dynamic_pointer_cast<Pair>(a)) {
-            vector<shared_ptr<LispVal> > args = ListToVector(dcast<Pair>(p->cdr));
+    LispVal *eval(LispVal* a, Environment *e) {
+        if(auto symbol = dynamic_cast<Symbol*>(a))
+            return env_lookup(e, symbol->name);
+        if(auto num = dynamic_cast<Number*>(a))
+            return num;
+        if(auto p = dynamic_cast<Pair*>(a)) {
+            vector<LispVal*> args = ListToVector(dcast_ex<Pair>(p->cdr));
 
-            shared_ptr<LispVal> ret;
+            LispVal* ret = nullptr;
         
             //cerr << ">" << show(a) << endl << endl;
 
-            auto f = dynamic_pointer_cast<Symbol>(p->car);
+            auto f = dynamic_cast<Symbol*>(p->car);
             if(f && f->name == "lambda") {
                 if(args.size() != 2)
                     throw malformed_lambda("malformed_lambda argsize: expected 2 get " + to_string(args.size()));
 
                 vector<string> formals;
-                ListForeach(dcast<Pair>(args[0]),
-                            [&](const shared_ptr<LispVal> &v){
-                                formals.push_back(dcast<Symbol>(v)->name);
+                ListForeach(dcast_ex<Pair>(args[0]),
+                            [&](LispVal* v){
+                                formals.push_back(dcast_ex<Symbol>(v)->name);
                             });
 
-                auto body = dcast<Pair>(args[1]);
+                auto body = dcast_ex<Pair>(args[1]);
             
-                ret = make_shared<LambdaProcedure>(formals, body, e);
+                ret = alloc<LambdaProcedure>(formals, body, e);
             } else if(f && f->name == "cond") {
                 for(auto &i : args) {
-                    vector<shared_ptr<LispVal> > values = ListToVector(dcast<Pair>(i));
+                    vector<LispVal*> values = ListToVector(dcast_ex<Pair>(i));
 
                     if(values.size() != 2)
                         throw malformed_cond();
 
-                    auto val = dynamic_pointer_cast<Symbol>(values[0]);
+                    auto val = dynamic_cast<Symbol*>(values[0]);
 
                     if(val && val->name == "else")
                         ret = eval(values[1], e);
-                    else if(auto val = dynamic_pointer_cast<Bool>(eval(values[0],e)))
+                    else if(auto val = dynamic_cast<Bool*>(eval(values[0],e)))
                         if(val->value) {
                             ret = eval(values[1], e);
                             goto end;
@@ -73,8 +71,8 @@ namespace sucheme{
                 if(args.size() != 2)
                     throw malformed_define();
 
-                if(auto symbol = dynamic_pointer_cast<Symbol>(args[0])) {
-                    env_define(e.get(), symbol->name, eval(args[1],e));
+                if(auto symbol = dynamic_cast<Symbol*>(args[0])) {
+                    env_define(e, symbol->name, eval(args[1],e));
                     ret = symbol;
                 }else
                     throw malformed_define();
@@ -82,16 +80,16 @@ namespace sucheme{
                 if(args.size() != 2)
                     throw malformed_define();
 
-                if(auto symbol = dynamic_pointer_cast<Symbol>(args[0])) {
-                    auto la = dcast<LambdaProcedure>(eval(args[1],e));
-                    env_define(e.get(), symbol->name, make_shared<LambdaMacro>(la->formals, la->body, la->environment));
+                if(auto symbol = dynamic_cast<Symbol*>(args[0])) {
+                    auto la = dcast_ex<LambdaProcedure>(eval(args[1],e));
+                    env_define(e, symbol->name, alloc<LambdaMacro>(la->formals, la->body, la->environment));
                     ret = symbol;
                 }else
                     throw malformed_define();
             } else if(f && f->name == "set!") {
                 if(args.size() != 2)
                     throw malformed_set("malformed_set:args expected 2 but get " + to_string(args.size()));
-                env_set(e.get(), dcast<Symbol>(args[0])->name, eval(args[1], e));
+                env_set(e, dcast_ex<Symbol>(args[0])->name, eval(args[1], e));
                 ret = nil();
             } else if(f && f->name == "begin") {
                 for(auto &i : args)
@@ -100,36 +98,36 @@ namespace sucheme{
             
                 auto callee = eval(p->car, e);
             
-                if(auto func = dynamic_pointer_cast<Procedure>(callee)) {
-                    vector<shared_ptr<LispVal> > eval_args;
+                if(auto func = dynamic_cast<Procedure*>(callee)) {
+                    vector<LispVal*> eval_args;
             
                     for(auto &v : args)
                         eval_args.push_back(eval(v, e));
 
                     ret = func->call(eval_args);
-                } else if(auto lambda = dynamic_pointer_cast<LambdaProcedure>(callee)) {
-                    vector<shared_ptr<LispVal> > eval_args;
+                } else if(auto lambda = dynamic_cast<LambdaProcedure*>(callee)) {
+                    vector<LispVal*> eval_args;
             
                     for(auto &v : args)
                         eval_args.push_back(eval(v, e));
 
-                    auto e_lambda = make_shared<Environment>(e);
+                    auto e_lambda = alloc<Environment>(e);
                 
                     if(args.size() != lambda->formals.size())
                         throw not_implemented("wrong number of args");
                 
                     for(unsigned int i=0; i<args.size(); i++)
-                        env_define(e_lambda.get(), lambda->formals[i], eval_args[i]);
+                        env_define(e_lambda, lambda->formals[i], eval_args[i]);
                 
                     ret = eval(lambda->body, e_lambda);
-                } else if(auto lambda = dynamic_pointer_cast<LambdaMacro>(callee)) {
-                    auto e_lambda = make_shared<Environment>(e);
+                } else if(auto lambda = dynamic_cast<LambdaMacro*>(callee)) {
+                    auto e_lambda = alloc<Environment>(e);
                 
                     if(args.size() != lambda->formals.size())
                         throw not_implemented("wrong number of args");
                 
                     for(unsigned int i=0; i<args.size(); i++)
-                        env_define(e_lambda.get(), lambda->formals[i], args[i]);
+                        env_define(e_lambda, lambda->formals[i], args[i]);
                 
                     ret = eval(lambda->body, e_lambda);
                 } else
@@ -139,12 +137,14 @@ namespace sucheme{
             //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;
             return ret;
         }
-        if(auto empty = dynamic_pointer_cast<Empty>(a))
-            return empty->shared_from_this();
-        if(auto proc = dynamic_pointer_cast<Procedure>(a))
-            return proc->shared_from_this();
-        if(auto lambdaproc = dynamic_pointer_cast<LambdaProcedure>(a))
-            return lambdaproc->shared_from_this();
+        if(auto b = dynamic_cast<Bool*>(a))
+            return b;
+        if(auto empty = dynamic_cast<Empty*>(a))
+            return empty;
+        if(auto proc = dynamic_cast<Procedure*>(a))
+            return proc;
+        if(auto lambdaproc = dynamic_cast<LambdaProcedure*>(a))
+            return lambdaproc;
         throw not_implemented();
     }
 }

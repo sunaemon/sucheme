@@ -11,29 +11,29 @@ namespace sucheme{
 
     string show(const LispVal *val)
     {
-        if(auto empty = dynamic_cast<const Empty*>(val))
+        if(dynamic_cast<const Empty*>(val))
             return "()";
         if(auto b = dynamic_cast<const Bool*>(val))
             return b->value ? "#t" : "#f";
-        if(auto num = dynamic_cast<Number*>(val))
+        if(auto num = dynamic_cast<const Number*>(val))
             return to_string(num->integer);
-        if(auto symbol = dynamic_pointer_cast<Symbol>(val))
+        if(auto symbol = dynamic_cast<const Symbol*>(val))
             return symbol->name;
-        if(auto p = dynamic_pointer_cast<Pair>(val)) {
+        if(auto p = dynamic_cast<const Pair*>(val)) {
             vector<string> buf;
             
-            Pair *next=p.get();
+            const Pair *next=p;
             
             for(;;){
                 buf.push_back(show(next->car));
                 
-                if(typeid(*next->cdr.get()) != typeid(Pair))
+                if(typeid(*next->cdr) != typeid(Pair))
                     break;
                 
-                next = static_cast<Pair*>(next->cdr.get());
+                next = static_cast<Pair*>(next->cdr);
             }
             
-            if(typeid(*next->cdr.get()) == typeid(Empty)) {
+            if(typeid(*next->cdr) == typeid(Empty)) {
                 stringstream ost;
                 ost << "(";
                 bool flag = false;
@@ -50,12 +50,12 @@ namespace sucheme{
                 throw std::exception();
             }
         }
-        if(auto proc = dynamic_pointer_cast<Procedure>(val)) {
+        if(auto proc = dynamic_cast<const Procedure*>(val)) {
             stringstream ost;
             ost << "<Procedure 0x" << std::hex << (unsigned long)proc->func << ">";
             return ost.str();
         }
-        if(auto lambdaproc = dynamic_pointer_cast<LambdaProcedure>(val)) {
+        if(auto lambdaproc = dynamic_cast<const LambdaProcedure*>(val)) {
             stringstream ost;
             ost << "<Lambda Procedure (lambda (";
             for(auto &n : lambdaproc->formals) {

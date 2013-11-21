@@ -12,41 +12,6 @@ namespace sucheme {
     using std::cerr;
     using std::endl;
 
-    bool whitespace(wchar_t c) {
-        return c==' ' || c == '\n';
-    }
-
-    bool delimiter(wchar_t c) {
-        return whitespace(c) || c=='(' || c==')' || c=='"' || c==';' || c==0;
-    }
-
-    bool digit(wchar_t c) {
-        return '0' <= c && c <= '9';
-    }
-
-    bool str_in(const wchar_t *str, wchar_t c)
-    {
-        while(*str)
-            if(*str++==c)
-                return true;
-        return false;
-    }
-
-    bool letter(wchar_t c)
-    {
-        return ('a' <= c && c<='z') || ('A' <= c && c<='Z');
-    }
-
-    bool initial(wchar_t c) {
-        const wchar_t *special_initial = L"!$%&*/:<=>?^_;~";
-        return str_in(special_initial, c) || letter(c);
-    }
-
-     bool subsequent(wchar_t c) {
-        const wchar_t *special_subsequent = L"+-.@";
-        return initial(c) || digit(c) || str_in(special_subsequent, c);
-    }
-
     std::tuple<int,int> parse_int(const std::string &s, int p) {
         int64_t ret=0;
 
@@ -63,7 +28,7 @@ namespace sucheme {
 
     parse_result PExpr(const std::string &s, int32_t p)
     {
-        while(whitespace(s[p])) p++;
+        while(white_space(s[p])) p++;
 
         if(s[p] == '#') {
             p++;
@@ -125,7 +90,7 @@ namespace sucheme {
             auto list = alloc<Pair>();
             Pair *next(list);
 
-            while(whitespace(s[p])) p++;
+            while(white_space(s[p])) p++;
 
             auto ret = PExpr(s, p);
             auto a = ret.val;
@@ -133,10 +98,10 @@ namespace sucheme {
             list->car = a;
             p = ret.pos;
 
-            while(whitespace(s[p])) p++;
+            while(white_space(s[p])) p++;
 
             while(s[p] != ')') {
-                while(whitespace(s[p])) p++;
+                while(white_space(s[p])) p++;
 
                 auto ret = PExpr(s, p);
 
@@ -148,7 +113,7 @@ namespace sucheme {
 
                 p = ret.pos;
 
-                while(whitespace(s[p])) p++;
+                while(white_space(s[p])) p++;
             }
             next->cdr = alloc<Empty>();
         

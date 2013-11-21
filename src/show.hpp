@@ -2,7 +2,7 @@
 #include <memory>
 #include "lispval.hpp"
 namespace sucheme{
-    using std::shared_ptr;
+    using std::string;
 
-    LispVal *eval(LispVal *a, Environment *e);
+    string show(const LispVal *val);
 }

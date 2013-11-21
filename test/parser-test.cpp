@@ -23,7 +23,7 @@ void test_number_parser(int i)
 {
     string s = to_string(i);
     auto ret = PExpr(s);
-    EXPECT_EQ(i, dynamic_cast<Number*>(ret.val.get())->integer);
+    EXPECT_EQ(i, dynamic_cast<Number*>(ret.val)->integer);
     EXPECT_EQ((int)s.length(), ret.pos);
 }
 
@@ -46,12 +46,12 @@ TEST(Parser, List)
 {
     auto ret = PExpr("(1 2)");
 
-    shared_ptr<LispVal> dat = std::move(ret.val);
-    auto dat_as_pair = dynamic_pointer_cast<Pair>(dat);
-    EXPECT_EQ(1,dynamic_pointer_cast<Number>(dat_as_pair->car)->integer);
-    auto sc = dynamic_pointer_cast<Pair>(dat_as_pair->cdr);
-    EXPECT_EQ(2,dynamic_pointer_cast<Number>(sc->car)->integer);
-    dynamic_cast<Empty*>(sc->cdr.get());
+    LispVal *dat = ret.val;
+    auto dat_as_pair = dynamic_cast<Pair*>(dat);
+    EXPECT_EQ(1,dynamic_cast<Number*>(dat_as_pair->car)->integer);
+    auto sc = dynamic_cast<Pair*>(dat_as_pair->cdr);
+    EXPECT_EQ(2,dynamic_cast<Number*>(sc->car)->integer);
+    dynamic_cast<Empty*>(sc->cdr);
 }
 
 TEST(List, make_list)

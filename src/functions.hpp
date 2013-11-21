@@ -14,12 +14,12 @@ namespace sucheme {
     using std::unique_ptr;
     using std::shared_ptr;
 
-    shared_ptr<LispVal> add(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> eq(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> sub(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> mul(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> print(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> car(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> cdr(const vector<shared_ptr<LispVal> > &arg);
-    shared_ptr<LispVal> null_is(const vector<shared_ptr<LispVal> > &arg);
+    LispVal* add(const vector<LispVal* > &arg);
+    LispVal* eq(const vector<LispVal* > &arg);
+    LispVal* sub(const vector<LispVal* > &arg);
+    LispVal* mul(const vector<LispVal* > &arg);
+    LispVal* print(const vector<LispVal* > &arg);
+    LispVal* car(const vector<LispVal* > &arg);
+    LispVal* cdr(const vector<LispVal* > &arg);
+    LispVal* null_is(const vector<LispVal* > &arg);
 }
