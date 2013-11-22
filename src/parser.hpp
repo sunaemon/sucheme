@@ -46,11 +46,11 @@ namespace sucheme {
 
     struct parse_result
     {
-        LispVal *val;
+        GCObject *val;
         int pos;
     };
 
     std::tuple<int,int> parse_int(const std::string &s, int p);
     parse_result PExpr(const string &s, int32_t p = 0);
-    LispVal *parse(const string &s);
+    GCObject *parse(const string &s);
 }

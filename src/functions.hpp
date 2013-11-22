@@ -14,12 +14,13 @@ namespace sucheme {
     using std::unique_ptr;
     using std::shared_ptr;
 
-    LispVal* add(const vector<LispVal* > &arg);
-    LispVal* eq(const vector<LispVal* > &arg);
-    LispVal* sub(const vector<LispVal* > &arg);
-    LispVal* mul(const vector<LispVal* > &arg);
-    LispVal* print(const vector<LispVal* > &arg);
-    LispVal* car(const vector<LispVal* > &arg);
-    LispVal* cdr(const vector<LispVal* > &arg);
-    LispVal* null_is(const vector<LispVal* > &arg);
+    void init_environment(Environment *e);
+    GCObject* add(const vector<GCObject* > &arg);
+    GCObject* eq(const vector<GCObject* > &arg);
+    GCObject* sub(const vector<GCObject* > &arg);
+    GCObject* mul(const vector<GCObject* > &arg);
+    GCObject* print(const vector<GCObject* > &arg);
+    GCObject* car(const vector<GCObject* > &arg);
+    GCObject* cdr(const vector<GCObject* > &arg);
+    GCObject* null_is(const vector<GCObject* > &arg);
 }

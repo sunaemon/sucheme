@@ -5,6 +5,7 @@
 #include "lispval.hpp"
 #include "exceptions.hpp"
 #include "gc.hpp"
+#include "generic_functions.hpp"
 
 namespace sucheme{
     using std::string;
@@ -20,7 +21,7 @@ namespace sucheme{
 
         for(;;){
             callback(l->car);
-            ll = dynamic_cast<Pair*>(l->cdr);
+            ll = dcast<Pair>(l->cdr);
             if(!ll) break;
             l = ll;
         }
@@ -29,19 +30,19 @@ namespace sucheme{
             throw improper_list();
     }
 
-    vector<LispVal*> ListToVector(Pair* list);
+    vector<GCObject*> ListToVector(Pair* list);
 
-    inline LispVal *make_list() {
+    inline GCObject *make_list() {
         return alloc<Empty>();
     }
 
-    inline Pair* cons(LispVal *a, LispVal *l)
+    inline Pair* cons(GCObject *a, GCObject *l)
     {
         return alloc<Pair>(a, l);
     }
 
     template<class... Rest>
-    LispVal* make_list(LispVal *val, Rest... rest)
+    GCObject* make_list(GCObject *val, Rest... rest)
     {
         return cons(val, make_list(rest...));
     }

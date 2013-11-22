@@ -8,6 +8,7 @@
 #include <iostream>
 #include "exceptions.hpp"
 #include "generic_functions.hpp"
+#include "intern.hpp"
 
 namespace sucheme{
     using std::string;
@@ -18,95 +19,95 @@ namespace sucheme{
     using std::dynamic_pointer_cast;
     using std::endl;
 
-    LispVal *eval(LispVal* a, Environment *e) {
-        if(auto symbol = dynamic_cast<Symbol*>(a))
-            return env_lookup(e, symbol->name);
-        if(auto num = dynamic_cast<Number*>(a))
+    GCObject *eval(GCObject* a, Environment *e) {
+        if(auto symbol = dcast<Symbol>(a))
+            return env_lookup(e, symbol->id);
+        if(auto num = dcast<Number>(a))
             return num;
-        if(auto p = dynamic_cast<Pair*>(a)) {
-            vector<LispVal*> args = ListToVector(dcast_ex<Pair>(p->cdr));
+        if(auto p = dcast<Pair>(a)) {
+            vector<GCObject*> args = ListToVector(dcast_ex<Pair>(p->cdr));
 
-            LispVal* ret = nullptr;
+            GCObject* ret = nullptr;
         
             //cerr << ">" << show(a) << endl << endl;
 
-            auto f = dynamic_cast<Symbol*>(p->car);
-            if(f && f->name == "lambda") {
+            auto f = dcast<Symbol>(p->car);
+            if(f && f->id == ID_LAMBDA) {
                 if(args.size() != 2)
                     throw malformed_lambda("malformed_lambda argsize: expected 2 get " + to_string(args.size()));
 
-                vector<string> formals;
+                vector<int> formals;
                 ListForeach(dcast_ex<Pair>(args[0]),
-                            [&](LispVal* v){
-                                formals.push_back(dcast_ex<Symbol>(v)->name);
+                            [&](GCObject* v){
+                                formals.push_back(dcast_ex<Symbol>(v)->id);
                             });
 
                 auto body = dcast_ex<Pair>(args[1]);
             
                 ret = alloc<LambdaProcedure>(formals, body, e);
-            } else if(f && f->name == "cond") {
+            } else if(f && f->id == ID_COND) {
                 for(auto &i : args) {
-                    vector<LispVal*> values = ListToVector(dcast_ex<Pair>(i));
+                    vector<GCObject*> values = ListToVector(dcast_ex<Pair>(i));
 
                     if(values.size() != 2)
                         throw malformed_cond();
 
-                    auto val = dynamic_cast<Symbol*>(values[0]);
+                    auto val = dcast<Symbol>(values[0]);
 
-                    if(val && val->name == "else")
+                    if(val && val->id == intern_symbol("else"))
                         ret = eval(values[1], e);
-                    else if(auto val = dynamic_cast<Bool*>(eval(values[0],e)))
+                    else if(auto val = dcast<Bool>(eval(values[0],e)))
                         if(val->value) {
                             ret = eval(values[1], e);
                             goto end;
                         }
                 }
                 throw not_implemented();
-            } else if(f && f->name == "quote") {
+            } else if(f && f->id == ID_QUOTE) {
                 if(args.size() != 1)
                     throw malformed_quote();
 
                 ret = args[0];
-            } else if(f && f->name == "define") {
+            } else if(f && f->id == ID_DEFINE) {
                 if(args.size() != 2)
                     throw malformed_define();
 
-                if(auto symbol = dynamic_cast<Symbol*>(args[0])) {
-                    env_define(e, symbol->name, eval(args[1],e));
+                if(auto symbol = dcast<Symbol>(args[0])) {
+                    env_define(e, symbol->id, eval(args[1],e));
                     ret = symbol;
                 }else
                     throw malformed_define();
-            } else if(f && f->name == "define-macro") {
+            } else if(f && f->id == ID_DEFINE_MACRO) {
                 if(args.size() != 2)
                     throw malformed_define();
 
-                if(auto symbol = dynamic_cast<Symbol*>(args[0])) {
+                if(auto symbol = dcast<Symbol>(args[0])) {
                     auto la = dcast_ex<LambdaProcedure>(eval(args[1],e));
-                    env_define(e, symbol->name, alloc<LambdaMacro>(la->formals, la->body, la->environment));
+                    env_define(e, symbol->id, alloc<LambdaMacro>(la->formals, la->body, la->environment));
                     ret = symbol;
                 }else
                     throw malformed_define();
-            } else if(f && f->name == "set!") {
+            } else if(f && f->id == ID_SET) {
                 if(args.size() != 2)
                     throw malformed_set("malformed_set:args expected 2 but get " + to_string(args.size()));
-                env_set(e, dcast_ex<Symbol>(args[0])->name, eval(args[1], e));
+                env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
                 ret = nil();
-            } else if(f && f->name == "begin") {
+            } else if(f && f->id == ID_BEGIN) {
                 for(auto &i : args)
                     ret = eval(i, e);
             } else { // application is function call
             
                 auto callee = eval(p->car, e);
             
-                if(auto func = dynamic_cast<Procedure*>(callee)) {
-                    vector<LispVal*> eval_args;
+                if(auto func = dcast<Procedure>(callee)) {
+                    vector<GCObject*> eval_args;
             
                     for(auto &v : args)
                         eval_args.push_back(eval(v, e));
 
                     ret = func->call(eval_args);
-                } else if(auto lambda = dynamic_cast<LambdaProcedure*>(callee)) {
-                    vector<LispVal*> eval_args;
+                } else if(auto lambda = dcast<LambdaProcedure>(callee)) {
+                    vector<GCObject*> eval_args;
             
                     for(auto &v : args)
                         eval_args.push_back(eval(v, e));
@@ -120,7 +121,7 @@ namespace sucheme{
                         env_define(e_lambda, lambda->formals[i], eval_args[i]);
                 
                     ret = eval(lambda->body, e_lambda);
-                } else if(auto lambda = dynamic_cast<LambdaMacro*>(callee)) {
+                } else if(auto lambda = dcast<LambdaMacro>(callee)) {
                     auto e_lambda = alloc<Environment>(e);
                 
                     if(args.size() != lambda->formals.size())
@@ -137,13 +138,13 @@ namespace sucheme{
             //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;
             return ret;
         }
-        if(auto b = dynamic_cast<Bool*>(a))
+        if(auto b = dcast<Bool>(a))
             return b;
-        if(auto empty = dynamic_cast<Empty*>(a))
+        if(auto empty = dcast<Empty>(a))
             return empty;
-        if(auto proc = dynamic_cast<Procedure*>(a))
+        if(auto proc = dcast<Procedure>(a))
             return proc;
-        if(auto lambdaproc = dynamic_cast<LambdaProcedure*>(a))
+        if(auto lambdaproc = dcast<LambdaProcedure>(a))
             return lambdaproc;
         throw not_implemented();
     }

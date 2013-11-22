@@ -5,12 +5,11 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "../src/parser.hpp"
-#include "../src/environment.hpp"
-#include "../src/functions.hpp"
-#include "../src/list.hpp"
-#include "../src/cps.hpp"
-#include "../src/show.hpp"
+#include "parser.hpp"
+#include "environment.hpp"
+#include "functions.hpp"
+#include "list.hpp"
+#include "show.hpp"
 
 using namespace sucheme;
 using std::string;
@@ -23,7 +22,7 @@ void test_number_parser(int i)
 {
     string s = to_string(i);
     auto ret = PExpr(s);
-    EXPECT_EQ(i, dynamic_cast<Number*>(ret.val)->integer);
+    EXPECT_EQ(i, dcast<Number>(ret.val)->integer);
     EXPECT_EQ((int)s.length(), ret.pos);
 }
 
@@ -46,12 +45,12 @@ TEST(Parser, List)
 {
     auto ret = PExpr("(1 2)");
 
-    LispVal *dat = ret.val;
-    auto dat_as_pair = dynamic_cast<Pair*>(dat);
-    EXPECT_EQ(1,dynamic_cast<Number*>(dat_as_pair->car)->integer);
-    auto sc = dynamic_cast<Pair*>(dat_as_pair->cdr);
-    EXPECT_EQ(2,dynamic_cast<Number*>(sc->car)->integer);
-    dynamic_cast<Empty*>(sc->cdr);
+    GCObject *dat = ret.val;
+    auto dat_as_pair = dcast<Pair>(dat);
+    EXPECT_EQ(1,dcast<Number>(dat_as_pair->car)->integer);
+    auto sc = dcast<Pair>(dat_as_pair->cdr);
+    EXPECT_EQ(2,dcast<Number>(sc->car)->integer);
+    dcast_ex<Empty>(sc->cdr);
 }
 
 TEST(List, make_list)
@@ -71,18 +70,45 @@ void test_parse(const string &s)
     test_parse(s,s);
 }
 
-TEST(Parser, Parse1)
+TEST(Parser, Parse0)
 {
     test_parse("((+) test #t #f)");
+}
+TEST(Parser, Parse1)
+{
     test_parse("((+) test)");
+}
+TEST(Parser, Parse2)
+{
     test_parse("((test) ((>lsifsefj1111)))");
+}
+TEST(Parser, Parse3)
+{
     test_parse("(test)", "( test )");
+}
+TEST(Parser, Parse4)
+{
     test_parse("((test))", "( (test ) \
     )");
+}
+TEST(Parser, Parse5)
+{
     test_parse("((+) ())", "((+)())");
+}
+TEST(Parser, Parse6)
+{
     test_parse("((lambda (x) (+ 1 x)) 3)");
+}
+TEST(Parser, Parse7)
+{
     EXPECT_EQ(true, initial('!'));
+}
+TEST(Parser, Parse8)
+{
     EXPECT_EQ(true, initial('~'));
+}
+TEST(Parser, Parse9)
+{
     test_parse("(begin (set! a 1) (set! b 2) (+ a b))");
 }
 
@@ -105,7 +131,7 @@ TEST(Cps, IsSimple)
     EXPECT_EQ(true, is_simple(parse("(+ 1 3)"), *e));
 }
 
-void test_cps(shared_ptr<LispVal> a, shared_ptr<LispVal> b, shared_ptr<LispVal> cont)
+void test_cps(shared_ptr<GCObject> a, shared_ptr<GCObject> b, shared_ptr<GCObject> cont)
 {
     auto e = make_shared<Environment>(shared_ptr<Environment>(nullptr));
     e->env_map["+"] = make_shared<Procedure>(sucheme::add);

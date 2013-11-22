@@ -1,8 +1,10 @@
 #pragma once
 #include <memory>
 #include "lispval.hpp"
+#include "gc.hpp"
+
 namespace sucheme{
     using std::shared_ptr;
 
-    LispVal *eval(LispVal *a, Environment *e);
+    GCObject *eval(GCObject *a, Environment *e);
 }

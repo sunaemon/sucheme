@@ -25,5 +25,7 @@ namespace sucheme{
     EXEPT(malformed_set);
     EXEPT(malformed_quote);
     EXEPT(unsupported_grammer);
+    EXEPT(not_interned_symbol);
+    EXEPT(object_not_under_gc_control);
 #undef EXEPT
 }

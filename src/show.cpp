@@ -1,25 +1,104 @@
 #include "parser.hpp"
 #include <sstream>
 #include <iostream>
+#include "environment.hpp"
+#include "gc.hpp"
 
 namespace sucheme{
-
     using std::string;
     using std::vector;
     using std::stringstream;
     using std::to_string;
+    using std::endl;
 
-    string show(const LispVal *val)
+    inline string memory_location(void *ptr)
     {
-        if(dynamic_cast<const Empty*>(val))
+        auto in_active_buf = 0 <= rpos_active_mem(ptr) && rpos_active_mem(ptr) <= memsize;
+        auto in_inactive_buf = 0 <= rpos_inactive_mem(ptr) && rpos_inactive_mem(ptr) <= memsize;
+
+        if(!ptr)
+            return "nullptr";
+        if(in_inactive_buf)
+            return "inactive: " + to_string(rpos_inactive_mem(ptr));
+        else if(in_active_buf)
+            return "active  : " + to_string(rpos_active_mem(ptr));
+        else
+            return "out of gc control";
+    }
+    
+    string showptr(const GCObject *val)
+    {
+        if(dcast<const Empty>(val))
+            return "Empty\n";
+        if(auto b = dcast<const Bool>(val)) {
+            stringstream ost;
+            ost << "Bool" << endl;
+            ost << " value: " << (b->value ? "#t" : "#f") << endl;
+            return ost.str();
+        }
+        if(auto num = dcast<const Number>(val)) {
+            stringstream ost;
+            ost << "Number" << endl;
+            ost << " value: " << num->integer << endl;
+            return ost.str();
+        }
+        if(auto symbol = dcast<const Symbol>(val)) {
+            stringstream ost;
+            ost << "Symbol" << endl;
+            ost << " name : " << extern_symbol(symbol->id) << endl;
+            return ost.str();
+        }
+
+        if(auto p = dcast<const Pair>(val)) {
+            stringstream ost;
+            ost << "Pair" << endl;
+            ost << " car  : " << memory_location(p->car) << endl;
+            ost << " cdr  : " << memory_location(p->cdr) << endl;
+            return ost.str();
+        }
+        if(auto proc = dcast<const Procedure>(val)) {
+            stringstream ost;
+            ost << "Procedure" << endl;
+            ost << " addr : 0x" << std::hex << (unsigned long)proc->func << endl;
+            return ost.str();
+        }
+        if(auto lambdaproc = dcast<const LambdaProcedure>(val)) {
+            stringstream ost;
+            ost << "LambdaProcedure" << endl;
+            ost << " body : " << memory_location(lambdaproc->body) << endl;
+            ost << " env  : " << memory_location(lambdaproc->environment) << endl;
+            return ost.str();
+        }
+        if(auto e = dcast<const Environment>(val)) {
+            stringstream ost;
+            ost << "Environment" << endl;
+            ost << " paren: " << memory_location(e->parent) << endl;
+            ost << " e_map: " << memory_location(e->env_map) << endl;
+            return ost.str();
+        }
+        if(auto a = dcast<const EnvironmentMap>(val)) {
+            stringstream ost;
+            ost << "EnvironmentMap" << endl;
+            ost << " name : " << extern_symbol(a->name) << endl;
+            ost << " val  : " << memory_location(a->val) << endl;
+            ost << " l    : " << memory_location(a->l) << endl;
+            ost << " g    : " << memory_location(a->g) << endl;
+            return ost.str();
+        }
+        throw not_implemented(string("not_implemented ") + typeid(*val).name());
+    }
+
+    string show(const GCObject *val)
+    {
+        if(dcast<const Empty>(val))
             return "()";
-        if(auto b = dynamic_cast<const Bool*>(val))
+        if(auto b = dcast<const Bool>(val))
             return b->value ? "#t" : "#f";
-        if(auto num = dynamic_cast<const Number*>(val))
+        if(auto num = dcast<const Number>(val))
             return to_string(num->integer);
-        if(auto symbol = dynamic_cast<const Symbol*>(val))
-            return symbol->name;
-        if(auto p = dynamic_cast<const Pair*>(val)) {
+        if(auto symbol = dcast<const Symbol>(val))
+            return extern_symbol(symbol->id);
+        if(auto p = dcast<const Pair>(val)) {
             vector<string> buf;
             
             const Pair *next=p;
@@ -50,12 +129,12 @@ namespace sucheme{
                 throw std::exception();
             }
         }
-        if(auto proc = dynamic_cast<const Procedure*>(val)) {
+        if(auto proc = dcast<const Procedure>(val)) {
             stringstream ost;
             ost << "<Procedure 0x" << std::hex << (unsigned long)proc->func << ">";
             return ost.str();
         }
-        if(auto lambdaproc = dynamic_cast<const LambdaProcedure*>(val)) {
+        if(auto lambdaproc = dcast<const LambdaProcedure>(val)) {
             stringstream ost;
             ost << "<Lambda Procedure (lambda (";
             for(auto &n : lambdaproc->formals) {

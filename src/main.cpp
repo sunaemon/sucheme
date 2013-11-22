@@ -16,21 +16,10 @@ int main(int, char**)
     using_history();
     read_history(".my_history");
 
-    auto e = alloc<Environment>(nullptr);
-    env_define(e, "+", alloc<Procedure>(sucheme::add));
-    env_define(e, "=", alloc<Procedure>(sucheme::eq));
-    env_define(e, "*", alloc<Procedure>(sucheme::mul));
-    env_define(e, "-", alloc<Procedure>(sucheme::sub));
-    env_define(e, "car", alloc<Procedure>(sucheme::car));
-    env_define(e, "cdr", alloc<Procedure>(sucheme::cdr));
-    env_define(e, "print", alloc<Procedure>(sucheme::print));
-    env_define(e, "null?", alloc<Procedure>(sucheme::null_is));
-    env_define(e, "else", alloc<Bool>(true));
+    init_gc();
 
-    eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
-    eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);
-    eval(parse("(define caar (lambda (x) (car (car x))))"),e);
-    eval(parse("(define cddr (lambda (x) (cdr (cdr x))))"),e);
+    auto e = alloc<Environment>(nullptr);
+    init_environment(e);
 
     while((command = readline(">> "))) {
         add_history(command);

@@ -2,8 +2,12 @@
 #include <stdio.h>
 #include "gc.hpp"
 #include "exceptions.hpp"
+#include "generic_functions.hpp"
+#include "environment.hpp"
 
 namespace sucheme{
+    using std::to_string;
+
     char *mem[2];
     char *scaned;
     char *unscaned;
@@ -23,12 +27,7 @@ namespace sucheme{
         free(mem[1]);
     }
 
-    template<class T0, class T1>
-    T0 *dcast(T1 *val) {
-        return dynamic_cast<T0*>(val);
-    }
-
-    void copy(LispVal *&val) {
+    void copy(GCObject *&val) {
         if(auto b = dcast<Bool>(val))
             val = alloc<Bool>(*b);
         else if(auto n = dcast<Number>(val))
@@ -47,10 +46,29 @@ namespace sucheme{
             val = alloc<LambdaMacro>(*lm);
         else if(auto e = dcast<Environment>(val))
             val = alloc<Environment>(*e);
-        else if(auto a = dcast<Environment_Map>(val))
-            val = alloc<Environment_Map>(*a);
+        else if(auto a = dcast<EnvironmentMap>(val))
+            val = alloc<EnvironmentMap>(*a);
         else 
             throw not_implemented();
+    }
+    
+    int rpos_inactive_mem(void *ptr)
+    {
+        return (char *)ptr - mem[1-memory_in_used];
+    }
+
+    int rpos_active_mem(void *ptr)
+    {
+        return (char *)ptr - mem[memory_in_used];
+    }
+
+    inline bool have_to_move(void *ptr)
+    {
+        auto in_active_buf = 0 <= rpos_active_mem(ptr) && rpos_active_mem(ptr) <= memsize;
+        auto in_inactive_buf = 0 <= rpos_inactive_mem(ptr) && rpos_inactive_mem(ptr) <= memsize;
+        if(!in_active_buf && !in_inactive_buf)
+            throw object_not_under_gc_control("object_not_under_gc_control" + to_string(rpos_active_mem(ptr)) + ", " + to_string(rpos_inactive_mem(ptr)));
+        return in_inactive_buf;
     }
 
     unsigned long allocated_memory()
@@ -61,27 +79,32 @@ namespace sucheme{
    
     void run_gc(Environment *&e)
     {
-        //unsigned long beforesize = unscaned - mem[memory_in_used];
+        unsigned long beforesize = unscaned - mem[memory_in_used];
         memory_in_used = 1-memory_in_used;
         scaned = unscaned = mem[memory_in_used];
-
+        
         if(!e) {
-            //fprintf(stderr, "run_gc called memory usage: %ld -> 0\n", beforesize);
+            fprintf(stderr, "run_gc called memory usage: %ld -> 0\n", beforesize);
             return;
         }
-
+        
         e = alloc<Environment>(*e);
-
+        
         while(scaned < unscaned) {
-            LispVal *val = reinterpret_cast<LispVal*>(scaned);
+            //cerr << scaned - mem[0] << endl;
+            //cerr << unscaned - mem[0] << endl;
+            
+            GCObject *val = reinterpret_cast<GCObject*>(scaned);
 
-            if(dcast<Bool>(val))
+            cerr << endl << rpos_active_mem(val)  << endl << showptr(val);
+        
+           if(dcast<Bool>(val))
                 scaned += sizeof(Bool);
             else if(dcast<Number>(val))
                 scaned += sizeof(Number);
-            else if(dcast<Symbol>(val))
+            else if(dcast<Symbol>(val)) {
                 scaned += sizeof(Symbol);
-            else if(dcast<Empty>(val))
+            } else if(dcast<Empty>(val))
                 scaned += sizeof(Empty);
             else if(dcast<Procedure>(val))
                 scaned += sizeof(Procedure);
@@ -90,32 +113,43 @@ namespace sucheme{
                 copy(p->cdr);
                 scaned += sizeof(Pair);
             } else if(auto lp = dcast<LambdaProcedure>(val)) {
-                lp->body = alloc<Pair>(*lp->body);
-                lp->environment = alloc<Environment>(*lp->environment);
+                if(have_to_move(lp->body))
+                    lp->body = alloc<Pair>(*lp->body);
+                if(have_to_move(lp->environment))
+                    lp->environment = alloc<Environment>(*lp->environment);
                 scaned += sizeof(LambdaProcedure);
             } else if(auto lm = dcast<LambdaMacro>(val)) {
-                lm->body = alloc<Pair>(*lm->body);
-                lm->environment = alloc<Environment>(*lm->environment);
+                if(have_to_move(lm->body))
+                    lm->body = alloc<Pair>(*lm->body);
+                if(have_to_move(lm->environment))
+                    lm->environment = alloc<Environment>(*lm->environment);
                 scaned += sizeof(LambdaMacro);
             } else if(auto e = dcast<Environment>(val)) {
-                e->env_map = alloc<Environment_Map>(*e->env_map);
+                if(have_to_move(e->env_map))
+                    e->env_map = alloc<EnvironmentMap>(*e->env_map);
                 if(e->parent)
-                    e->parent = alloc<Environment>(*e->parent);
+                    if(have_to_move(e->parent))
+                        e->parent = alloc<Environment>(*e->parent);
                 scaned += sizeof(Environment);
-            } else if(auto a = dcast<Environment_Map>(val)) {
+            } else if(auto a = dcast<EnvironmentMap>(val)) {
+                if(have_to_move(a->val))
+                    copy(a->val);
                 if(a->g)
-                    a->g = alloc<Environment_Map>(*a->g);
+                    if(have_to_move(a->g))
+                       a->g = alloc<EnvironmentMap>(*a->g);
                 if(a->l)
-                    a->l = alloc<Environment_Map>(*a->l);
-                copy(a->val);
-                scaned += sizeof(Environment_Map);
+                    if(have_to_move(a->l))
+                        a->l = alloc<EnvironmentMap>(*a->l);
+                scaned += sizeof(EnvironmentMap);
             }
-            else 
+           else 
                 throw not_implemented();
+
+           cerr << "end " << rpos_active_mem(val) << endl;
         }
 
-        // unsigned long aftersize = unscaned - mem[memory_in_used];
+         unsigned long aftersize = unscaned - mem[memory_in_used];
         
-         //fprintf(stderr, "run_gc called memory usage: %ld -> %ld\n", beforesize, aftersize);
+         fprintf(stderr, "run_gc called memory usage: %ld -> %ld\n", beforesize, aftersize);
     }
 }

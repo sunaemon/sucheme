@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include "exceptions.hpp"
+#include "intern.hpp"
+#include "gc.hpp"
 
 namespace sucheme {
     using std::string;
@@ -11,19 +13,14 @@ namespace sucheme {
 
     struct Environment;
 
-    struct LispVal
-    {
-        virtual ~LispVal(){}
-    };
-
-    struct Number : LispVal
+    struct Number : GCObject
     {
         int integer;
 
         Number(int integer) : integer(integer) {}
     };
 
-    struct Bool : LispVal
+    struct Bool : GCObject
     {
         bool value;
 
@@ -31,58 +28,60 @@ namespace sucheme {
     };
 
 
-    struct Symbol : LispVal
+    struct Symbol : GCObject
     {
-        string name;
+        int id;
 
-        Symbol(const string &name) : name(name) {}
+        Symbol(const string &name) : id(intern_symbol(name.c_str())) {}
+        Symbol(const char *name) : id(intern_symbol(name)) {}
+        Symbol(int id) : id(id) {}
     };
 
-    struct Empty : LispVal
+    struct Empty : GCObject
     {
         Empty() {}
     };
 
-    struct Procedure : LispVal
+    struct Procedure : GCObject
     {
-        using subr = LispVal *(*)(const vector<LispVal*>&);
+        using subr = GCObject *(*)(const vector<GCObject*>&);
 
         subr func;
         
-        LispVal *call(const vector<LispVal*> &param) {
+        GCObject *call(const vector<GCObject*> &param) {
             return func(param);
         }
 
         Procedure(const subr &func) : func(func) {}
     };
 
-    struct Pair : LispVal
+    struct Pair : GCObject
     {
-        LispVal *car;
-        LispVal *cdr;
+        GCObject *car;
+        GCObject *cdr;
 
-        Pair(LispVal *car, LispVal *cdr) : car(car), cdr(cdr) {}
+        Pair(GCObject *car, GCObject *cdr) : car(car), cdr(cdr) {}
         Pair() {}
     };
 
-    struct LambdaProcedure : LispVal
+    struct LambdaProcedure : GCObject
     {
-        vector<string> formals;
+        vector<int> formals;
         Pair *body;
         Environment *environment;
         
-        LambdaProcedure(const vector<string> &formals,
+        LambdaProcedure(const vector<int> &formals,
                         Pair *body,
                         Environment *environment) :
             formals(formals), body(body), environment(environment) {}
     };
-    struct LambdaMacro : LispVal
+    struct LambdaMacro : GCObject
     {
-        vector<string> formals;
+        vector<int> formals;
         Pair *body;
         Environment *environment;
         
-        LambdaMacro(const vector<string> &formals,
+        LambdaMacro(const vector<int> &formals,
                         Pair *body,
                         Environment *environment) :
             formals(formals), body(body), environment(environment) {}

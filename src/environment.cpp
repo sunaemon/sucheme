@@ -3,22 +3,21 @@
 
 namespace sucheme
 {
-    using std::string;
-    using std::ostringstream;
     using std::cerr;
     using std::endl;
+    using std::to_string;
 
-    struct LispVal;
+    struct GCObject;
 
     struct env_map_find_return
     {
         bool found;
-        LispVal *val;
+        GCObject *val;
     };
 
-    inline env_map_find_return env_map_find(const Environment_Map *a, string name)
+    inline env_map_find_return env_map_find(const EnvironmentMap *a, int name)
     {
-        const Environment_Map *next = a;
+        const EnvironmentMap *next = a;
         for(;;) {
             if(name < next->name) {
                 if(next->l)
@@ -36,9 +35,9 @@ namespace sucheme
         }
     }
 
-    bool env_map_set(Environment_Map *a, string name, LispVal *val)
+    bool env_map_set(EnvironmentMap *a, int name, GCObject *val)
     {
-        Environment_Map *next = a;
+        EnvironmentMap *next = a;
         for(;;) {
             if(name < next->name) {
                 if(next->l)
@@ -57,22 +56,22 @@ namespace sucheme
         }
     }
 
-    void env_map_add(Environment_Map *a, string name, LispVal *val)
+    void env_map_add(EnvironmentMap *a, int name, GCObject *val)
     {
-        Environment_Map *next = a;
+        EnvironmentMap *next = a;
         for(;;) {
             if(name < next->name) {
                 if(next->l)
                     next=next->l;
                 else {
-                    next->l = alloc<Environment_Map>(name,val);
+                    next->l = alloc<EnvironmentMap>(name,val);
                     return;
                 }
             } else if(name > next->name) {
                 if(next->g)
                     next=next->g;
                 else {
-                    next->g = alloc<Environment_Map>(name,val);
+                    next->g = alloc<EnvironmentMap>(name,val);
                     return;
                 }
             } else if(name == next->name){
@@ -83,14 +82,14 @@ namespace sucheme
         }
     }
 
-    bool env_have(const Environment *e, const string &name)  {
+    bool env_have(const Environment *e, int name)  {
         if(e->env_map)
             return env_map_find(e->env_map, name).found;
         else
             return false;
     }
 
-    LispVal *env_lookup(const Environment *e, const string &name)  {
+    GCObject *env_lookup(const Environment *e, int name)  {
         if(e->env_map) {
             auto ret = env_map_find(e->env_map, name);
             if(ret.found)
@@ -100,32 +99,32 @@ namespace sucheme
         if(e->parent)
             return env_lookup(e->parent, name);
         else
-            throw unbouded_variable("unbouded_variable:" + name);
+            throw unbouded_variable("unbouded_variable:" + to_string(name));
     }
 
-    void env_define(Environment *e, const string &name, LispVal *value) {
+    void env_define(Environment *e, int name, GCObject *value) {
         if(e->env_map)
             env_map_add(e->env_map, name, value); // copy
         else {
-            e->env_map = alloc<Environment_Map>(name,value);
+            e->env_map = alloc<EnvironmentMap>(name,value);
         }
     }
 
-    void env_set(Environment *e, const string &name, LispVal *value) {
+    void env_set(Environment *e, int name, GCObject *value) {
         if(e->env_map) {
             if(!env_map_set(e->env_map, name, value)){
                 if(e->parent) {
                     if(!env_map_set(e->env_map, name, value))
-                        throw unbouded_variable("unbouded_variable:" + name);    
+                        throw unbouded_variable("unbouded_variable:" + to_string(name));
                 } else
-                    throw unbouded_variable("unbouded_variable:" + name);
+                    throw unbouded_variable("unbouded_variable:" + to_string(name));
             }
         } else {
-            e->env_map = alloc<Environment_Map>(name,value);
+            e->env_map = alloc<EnvironmentMap>(name,value);
         }            
     }
 
-    void env_map_show(Environment_Map *a)
+    void env_map_show(EnvironmentMap *a)
     {
         cerr << a->name << " l ";
         if(a->l)

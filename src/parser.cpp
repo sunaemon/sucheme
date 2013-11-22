@@ -21,7 +21,7 @@ namespace sucheme {
         return std::make_tuple(ret, p);
     }
 
-    inline parse_result make_parse_result(LispVal *val, int pos)
+    inline parse_result make_parse_result(GCObject *val, int pos)
     {
         return {val, pos};
     }
@@ -107,7 +107,7 @@ namespace sucheme {
 
                 next->cdr = alloc<Pair>();
 
-                next = static_cast<Pair*>(next->cdr);
+                next = (Pair*)(next->cdr);
 
                 next->car  = ret.val;
 
@@ -139,7 +139,7 @@ namespace sucheme {
         }
     }
 
-    LispVal *parse(const string &s) {
+    GCObject *parse(const string &s) {
         auto ret = PExpr(s);
         if(! (ret.pos > 0 && s.length() == (unsigned int)ret.pos)) {
             cerr << "input:" << s.length() << endl;
