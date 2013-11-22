@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <typeinfo>
+#include "gc_objects.hpp"
 
 namespace sucheme{
     const int memsize = 100000000;
@@ -23,11 +24,6 @@ namespace sucheme{
 
     using std::cerr;
     using std::endl;
-
-    struct GCObject
-    {
-        virtual ~GCObject(){}
-    };
 
     template<typename T, class ...Args>
     __attribute__((always_inline)) inline T *alloc(Args &&...args)

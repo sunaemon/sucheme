@@ -1,17 +1,36 @@
 #pragma once
-#include <memory>
-#include <list>
+#include "intern.hpp"
 #include <vector>
 #include <string>
-#include "exceptions.hpp"
-#include "intern.hpp"
-#include "gc.hpp"
 
-namespace sucheme {
+namespace sucheme{
     using std::string;
     using std::vector;
 
-    struct Environment;
+    struct GCObject
+    {
+        virtual ~GCObject(){}
+    };
+
+    struct EnvironmentMap : GCObject
+    {
+        EnvironmentMap *g;
+        EnvironmentMap *l;
+        
+        int name;
+        GCObject *val;
+        EnvironmentMap(int name, GCObject *val)
+            : g(nullptr), l(nullptr), name(name), val(val) {}
+    };
+
+    struct Environment : GCObject {
+        Environment *parent;
+
+        EnvironmentMap *env_map;
+
+        Environment(Environment *parent)
+        : parent(parent), env_map(nullptr) {}
+    };
 
     struct Number : GCObject
     {
@@ -26,7 +45,6 @@ namespace sucheme {
 
         Bool(bool value) : value(value) {}
     };
-
 
     struct Symbol : GCObject
     {
@@ -86,4 +104,6 @@ namespace sucheme {
                         Environment *environment) :
             formals(formals), body(body), environment(environment) {}
     };
+
+
 }

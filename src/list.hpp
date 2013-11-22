@@ -2,7 +2,6 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include "lispval.hpp"
 #include "exceptions.hpp"
 #include "gc.hpp"
 #include "generic_functions.hpp"

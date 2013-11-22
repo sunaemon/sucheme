@@ -11,7 +11,7 @@ namespace sucheme{
     using std::cerr;
     using std::endl;
 
-    static map<string, int> symbol_map { {"lambda", ID_LAMBDA}, {"cond",ID_COND}, {"quote", ID_QUOTE}, {"define", ID_DEFINE}, {"define-macro", ID_DEFINE_MACRO}, {"set!",ID_SET}, {"begin", ID_BEGIN} };
+    static map<string, int> symbol_map { {"lambda", ID_LAMBDA}, {"cond",ID_COND}, {"quote", ID_QUOTE}, {"define", ID_DEFINE}, {"define-macro", ID_DEFINE_MACRO}, {"set!",ID_SET}, {"begin", ID_BEGIN},{"else", ID_ELSE} };
     static int next_id = REGISTERED_ID_COUNT;
 
     int intern_symbol(const char *name)

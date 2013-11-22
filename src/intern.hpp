@@ -12,6 +12,7 @@ namespace sucheme
         ID_DEFINE_MACRO,
         ID_SET,
         ID_BEGIN,
+        ID_ELSE,
         REGISTERED_ID_COUNT
     };
 

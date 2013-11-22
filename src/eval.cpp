@@ -20,10 +20,18 @@ namespace sucheme{
     using std::endl;
 
     GCObject *eval(GCObject* a, Environment *e) {
-        if(auto symbol = dcast<Symbol>(a))
-            return env_lookup(e, symbol->id);
-        if(auto num = dcast<Number>(a))
-            return num;
+        if(auto s = dcast<Symbol>(a))
+            return env_lookup(e, s->id);
+        if(auto n = dcast<Number>(a))
+            return n;
+        if(auto b = dcast<Bool>(a))
+            return b;
+        if(auto empty = dcast<Empty>(a))
+            return empty;
+        if(auto proc = dcast<Procedure>(a))
+            return proc;
+        if(auto lambdaproc = dcast<LambdaProcedure>(a))
+            return lambdaproc;
         if(auto p = dcast<Pair>(a)) {
             vector<GCObject*> args = ListToVector(dcast_ex<Pair>(p->cdr));
 
@@ -54,7 +62,7 @@ namespace sucheme{
 
                     auto val = dcast<Symbol>(values[0]);
 
-                    if(val && val->id == intern_symbol("else"))
+                    if(val && val->id == ID_ELSE)
                         ret = eval(values[1], e);
                     else if(auto val = dcast<Bool>(eval(values[0],e)))
                         if(val->value) {
@@ -96,7 +104,6 @@ namespace sucheme{
                 for(auto &i : args)
                     ret = eval(i, e);
             } else { // application is function call
-            
                 auto callee = eval(p->car, e);
             
                 if(auto func = dcast<Procedure>(callee)) {
@@ -138,14 +145,6 @@ namespace sucheme{
             //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;
             return ret;
         }
-        if(auto b = dcast<Bool>(a))
-            return b;
-        if(auto empty = dcast<Empty>(a))
-            return empty;
-        if(auto proc = dcast<Procedure>(a))
-            return proc;
-        if(auto lambdaproc = dcast<LambdaProcedure>(a))
-            return lambdaproc;
         throw not_implemented();
     }
 }

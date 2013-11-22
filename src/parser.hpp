@@ -4,7 +4,6 @@
 #include <memory>
 #include "exceptions.hpp"
 #include "generic_functions.hpp"
-#include "lispval.hpp"
 
 namespace sucheme {
     using std::string;
