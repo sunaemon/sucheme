@@ -17,9 +17,4 @@ namespace sucheme{
     using std::endl;
     using std::cerr;
  
-    vector<GCObject*> ListToVector(Pair *list) {
-        vector<GCObject *> ret;
-        ListForeach(list,[&ret](GCObject *v){ret.push_back(v);});
-        return ret;
-    }
 }

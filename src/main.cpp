@@ -29,6 +29,7 @@ int main(int, char**)
         } catch (std::exception &e) {
             cerr << e.what() << endl;
         }
+        run_gc(e);
 
         free(command);
     }

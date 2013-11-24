@@ -26,14 +26,17 @@ namespace sucheme{
     using std::endl;
 
     template<typename T, class ...Args>
-    __attribute__((always_inline)) inline T *alloc(Args &&...args)
+    inline T *alloc(Args &&...args)
     {
-        //if((unsigned long)(memsize - (scaned - mem[memory_in_used])) < sizeof(T))
-            //run_gc();
+        if((unsigned long)(memsize - (unscaned - mem[memory_in_used])) < sizeof(T))
+            throw no_memory("no memory. please run gc");
         
         //fprintf(stderr, "alloc %40s (%2ld) from:%10d rest:%10ld\n", typeid(T).name(), sizeof(T), rpos_active_mem(unscaned), allocated_memory());
         
-        T *ret = new(unscaned) T(std::forward<Args>(args)...);
+        //T *ret = new(unscaned) T(std::forward<Args>(args)...);
+        T *ret = unscaned;
+        init(ret, std::forward<Args>(args)...);
+        ret->whereis = ret; 
         unscaned+=sizeof(T);
         return ret;
     }

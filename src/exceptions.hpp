@@ -27,5 +27,6 @@ namespace sucheme{
     EXEPT(unsupported_grammer);
     EXEPT(not_interned_symbol);
     EXEPT(object_not_under_gc_control);
+    EXEPT(no_memory);
 #undef EXEPT
 }

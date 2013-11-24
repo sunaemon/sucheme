@@ -35,7 +35,7 @@ namespace sucheme {
             if(s[p] == 't') {
                 p++;
                 if(delimiter(s[p]))
-                    return make_parse_result(alloc<Bool>(true), p);
+                    return make_parse_result((GCObject*)alloc<Bool>(true), p);
                 else
                     throw unsupported_grammer();
             } else if(s[p] == 'f') {

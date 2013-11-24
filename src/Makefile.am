@@ -10,4 +10,5 @@ sucheme_LDADD = libsucheme.la
 sucheme_LDFLAGS = -lreadline
 
 check-syntax:
-	$(CXXCOMPILE) -o nul -S ${CHK_SOURCES}
+	$(CXXCOMPILE)  -Wall -Wextra -pedantic -fsyntax-only -o nul -S ${CHK_SOURCES}
+	cppcheck --enable=all --std=c++11 --template gcc -q $(CHK_SOURCES)

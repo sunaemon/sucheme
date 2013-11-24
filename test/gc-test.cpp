@@ -16,7 +16,7 @@ using std::shared_ptr;
 using namespace sucheme;
 using namespace std;
 
-TEST(GC, Test1)
+/*TEST(GC, Test1)
 {
     int *i = alloc<int>();
     int *j = alloc<int>();
@@ -40,7 +40,8 @@ TEST(GC, Test1)
     *j = 0;
     EXPECT_EQ(0, *i);
     EXPECT_EQ(0, *j);
-}
+    }*/
+
 
 TEST(GC, Test2)
 {
@@ -52,11 +53,9 @@ TEST(GC, Test2)
 
     eval(parse("(define caar (lambda (x) (car (car x))))"),e);
 
-    //auto before=allocated_memory();
-    
-    //run_gc(e);
+    run_gc(e);
 
-    //auto after=allocated_memory();
+    memset(mem[1-memory_in_used], 0, memsize);
 
-    //EXPECT_EQ(before, after);
+    EXPECT_EQ("a", show(eval(parse("(caar (quote ((a b) a b c)))"),e)));
 }

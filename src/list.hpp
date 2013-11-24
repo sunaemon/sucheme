@@ -14,7 +14,7 @@ namespace sucheme{
     using std::dynamic_pointer_cast;
 
    template<typename T>
-   void ListForeach(Pair *list, T callback) {
+   inline void ListForeach(Pair *list, T callback) {
         Pair *l = list;
         Pair *ll;
 
@@ -25,11 +25,16 @@ namespace sucheme{
             l = ll;
         }
 
-        if(typeid(*l->cdr) != typeid(Empty))
+        if(!dcast<Empty>(l->cdr))
             throw improper_list();
     }
 
-    vector<GCObject*> ListToVector(Pair* list);
+    inline vector<GCObject*> ListToVector(Pair *list) {
+        vector<GCObject *> ret;
+        ret.reserve(10);
+        ListForeach(list,[&ret](GCObject *v){ret.push_back(v);});
+        return ret;
+    }
 
     inline GCObject *make_list() {
         return alloc<Empty>();
