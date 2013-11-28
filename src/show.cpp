@@ -109,7 +109,7 @@ namespace sucheme{
                 if(!dcast_const<Pair>(next->cdr))
                     break;
                 
-                next = static_cast<Pair*>(next->cdr);
+                next = (Pair*)(next->cdr);
             }
             
             if(dcast_const<Empty>(next->cdr)) {
@@ -141,7 +141,7 @@ namespace sucheme{
                 ost << n << " ";
             }
             ost << ") ";
-            ost << show(lambdaproc->body);
+            ost << show(ucast(lambdaproc->body));
             ost << ")>";
             return ost.str();
         }

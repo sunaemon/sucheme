@@ -57,25 +57,25 @@ namespace sucheme{
             return val->whereis;
 
         if(auto b = dcast<Bool>(val)) {
-            return val->whereis = alloc<Bool>(*b);
+            return val->whereis = ucast(alloc<Bool>(*b));
         } else if(auto n = dcast<Number>(val))
-            return val->whereis =alloc<Number>(*n);
+            return val->whereis = ucast(alloc<Number>(*n));
         else if(auto s = dcast<Symbol>(val))
-            return val->whereis =alloc<Symbol>(*s);
+            return val->whereis = ucast(alloc<Symbol>(*s));
         else if(auto p = dcast<Pair>(val))
-            return val->whereis =alloc<Pair>(*p);
+            return val->whereis = ucast(alloc<Pair>(*p));
         else if(auto em = dcast<Empty>(val))
-            return val->whereis =alloc<Empty>(*em);
+            return val->whereis = ucast(alloc<Empty>(*em));
         else if(auto pc = dcast<Procedure>(val))
-            return val->whereis =alloc<Procedure>(*pc);
+            return val->whereis = ucast(alloc<Procedure>(*pc));
         else if(auto lp = dcast<LambdaProcedure>(val))
-            return val->whereis =alloc<LambdaProcedure>(*lp);
+            return val->whereis = ucast(alloc<LambdaProcedure>(*lp));
         else if(auto lm = dcast<LambdaMacro>(val))
-            return val->whereis =alloc<LambdaMacro>(*lm);
+            return val->whereis = ucast(alloc<LambdaMacro>(*lm));
         else if(auto e = dcast<Environment>(val))
-            return val->whereis =alloc<Environment>(*e);
+            return val->whereis = ucast(alloc<Environment>(*e));
         else if(auto a = dcast<EnvironmentMap>(val))
-            return val->whereis =alloc<EnvironmentMap>(*a);
+            return val->whereis = ucast(alloc<EnvironmentMap>(*a));
         else 
             throw not_implemented();
     }
@@ -99,7 +99,7 @@ namespace sucheme{
             return;
         }
         
-        e = (Environment*)copy(e);
+        e = (Environment*)copy(ucast(e));
         
         while(scaned < unscaned) {
             //cerr << scaned - mem[0] << endl;
@@ -124,24 +124,24 @@ namespace sucheme{
                 p->cdr = copy(p->cdr);
                 scaned += sizeof(Pair);
             } else if(auto lp = dcast<LambdaProcedure>(val)) {
-                lp->body = (Pair*)copy(lp->body);
-                lp->environment = (Environment*)copy(lp->environment);
+                lp->body = (Pair*)copy(ucast(lp->body));
+                lp->environment = (Environment*)copy(ucast(lp->environment));
                 scaned += sizeof(LambdaProcedure);
             } else if(auto lm = dcast<LambdaMacro>(val)) {
-                lm->body = (Pair*)copy(lm->body);
-                lm->environment = (Environment*)copy(lm->environment);
+                lm->body = (Pair*)copy(ucast(lm->body));
+                lm->environment = (Environment*)copy(ucast(lm->environment));
                 scaned += sizeof(LambdaMacro);
             } else if(auto e = dcast<Environment>(val)) {
-                e->env_map = (EnvironmentMap*)copy(e->env_map);
+                e->env_map = (EnvironmentMap*)copy(ucast(e->env_map));
                 if(e->parent)
-                    e->parent = (Environment*)copy(e->parent);
+                    e->parent = (Environment*)copy(ucast(e->parent));
                 scaned += sizeof(Environment);
             } else if(auto a = dcast<EnvironmentMap>(val)) {
                 a->val = copy(a->val);
                 if(a->g)
-                    a->g = (EnvironmentMap*)copy(a->g);
+                    a->g = (EnvironmentMap*)copy(ucast(a->g));
                 if(a->l)
-                    a->l = (EnvironmentMap*)copy(a->l);
+                    a->l = (EnvironmentMap*)copy(ucast(a->l));
                 scaned += sizeof(EnvironmentMap);
             }
            else 

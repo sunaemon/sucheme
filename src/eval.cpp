@@ -23,15 +23,15 @@ namespace sucheme{
         if(auto s = dcast<Symbol>(a))
             return env_lookup(e, s->id);
         if(auto n = dcast<Number>(a))
-            return n;
+            return ucast(n);
         if(auto b = dcast<Bool>(a))
-            return b;
+            return ucast(b);
         if(auto empty = dcast<Empty>(a))
-            return empty;
+            return ucast(empty);
         if(auto proc = dcast<Procedure>(a))
-            return proc;
+            return ucast(proc);
         if(auto lambdaproc = dcast<LambdaProcedure>(a))
-            return lambdaproc;
+            return ucast(lambdaproc);
         if(auto p = dcast<Pair>(a)) {
             vector<GCObject*> args = ListToVector(dcast_ex<Pair>(p->cdr));
 
@@ -52,7 +52,7 @@ namespace sucheme{
 
                 auto body = dcast_ex<Pair>(args[1]);
             
-                ret = alloc<LambdaProcedure>(formals, body, e);
+                ret = ucast(alloc<LambdaProcedure>(formals, body, e));
             } else if(f && f->id == ID_COND) {
                 for(auto &i : args) {
                     vector<GCObject*> values = ListToVector(dcast_ex<Pair>(i));
@@ -82,7 +82,7 @@ namespace sucheme{
 
                 if(auto symbol = dcast<Symbol>(args[0])) {
                     env_define(e, symbol->id, eval(args[1],e));
-                    ret = symbol;
+                    ret = ucast(symbol);
                 }else
                     throw malformed_define();
             } else if(f && f->id == ID_DEFINE_MACRO) {
@@ -91,15 +91,15 @@ namespace sucheme{
 
                 if(auto symbol = dcast<Symbol>(args[0])) {
                     auto la = dcast_ex<LambdaProcedure>(eval(args[1],e));
-                    env_define(e, symbol->id, alloc<LambdaMacro>(la->formals, la->body, la->environment));
-                    ret = symbol;
+                    env_define(e, symbol->id, ucast(alloc<LambdaMacro>(la->formals, la->body, la->environment)));
+                    ret = ucast(symbol);
                 }else
                     throw malformed_define();
             } else if(f && f->id == ID_SET) {
                 if(args.size() != 2)
                     throw malformed_set("malformed_set:args expected 2 but get " + to_string(args.size()));
                 env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
-                ret = nil();
+                ret = ucast(nil());
             } else if(f && f->id == ID_BEGIN) {
                 for(auto &i : args)
                     ret = eval(i, e);
@@ -127,7 +127,7 @@ namespace sucheme{
                     for(unsigned int i=0; i<args.size(); i++)
                         env_define(e_lambda, lambda->formals[i], eval_args[i]);
                 
-                    ret = eval(lambda->body, e_lambda);
+                    ret = eval(ucast(lambda->body), e_lambda);
                 } else if(auto lambda = dcast<LambdaMacro>(callee)) {
                     auto e_lambda = alloc<Environment>(e);
                 
@@ -137,9 +137,9 @@ namespace sucheme{
                     for(unsigned int i=0; i<args.size(); i++)
                         env_define(e_lambda, lambda->formals[i], args[i]);
                 
-                    ret = eval(lambda->body, e_lambda);
+                    ret = eval(ucast(lambda->body), e_lambda);
                 } else
-                    throw invalid_aplication("invalid_aplication:" + show(p) + ";" + show(callee));
+                    throw invalid_aplication("invalid_aplication:" + show(ucast(p)) + ";" + show(callee));
             }
         end:
             //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;

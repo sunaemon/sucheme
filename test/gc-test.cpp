@@ -49,7 +49,7 @@ TEST(GC, Test2)
     run_gc(nullenv);
 
     auto e = alloc<Environment>(nullptr);
-    env_intern_define(e, "car", alloc<Procedure>(sucheme::car));
+    env_intern_define(e, "car", ucast(alloc<Procedure>(sucheme::car)));
 
     eval(parse("(define caar (lambda (x) (car (car x))))"),e);
 

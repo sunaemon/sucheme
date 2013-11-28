@@ -29,59 +29,69 @@ namespace sucheme{
     {
         char tag;
         GCObject *whereis;
-        GCObject(char tag) : tag(tag) {}
+        GCObject(char tag) : tag(tag), whereis(nullptr) {}
     };
 
-    struct EnvironmentMap : GCObject
+    struct EnvironmentMap
     {
+        GCObject obj;
+
         EnvironmentMap *g;
         EnvironmentMap *l;
         
         int id;
         GCObject *val;
         EnvironmentMap(int id, GCObject *val)
-            : GCObject(TAG_EnvironmentMap), g(nullptr), l(nullptr), id(id), val(val) {}
+            : obj(TAG_EnvironmentMap), g(nullptr), l(nullptr), id(id), val(val) {}
     };
 
-    struct Environment : GCObject {
+    struct Environment
+    {
+        GCObject obj;
+
         Environment *parent;
 
         EnvironmentMap *env_map;
 
         Environment(Environment *parent)
-        : GCObject(TAG_Environment), parent(parent), env_map(nullptr) {}
+        : obj(TAG_Environment), parent(parent), env_map(nullptr) {}
     };
 
-    struct Number : GCObject
+    struct Number
     {
+        GCObject obj;
         int integer;
 
-        Number(int integer) : GCObject(TAG_Number), integer(integer) {}
+        Number(int integer) : obj(TAG_Number), integer(integer) {}
     };
 
-    struct Bool : GCObject
+    struct Bool
     {
+        GCObject obj;
         bool value;
 
-        Bool(bool value) : GCObject(TAG_Bool), value(value) {}
+        Bool(bool value) : obj(TAG_Bool), value(value) {}
     };
 
-    struct Symbol : GCObject
+    struct Symbol
     {
+        GCObject obj;
         int id;
 
-        Symbol(const string &name) : GCObject(TAG_Symbol), id(intern_symbol(name.c_str())) {}
-        Symbol(const char *name) : GCObject(TAG_Symbol), id(intern_symbol(name)) {}
-        Symbol(int id) : GCObject(TAG_Symbol), id(id) {}
+        Symbol(const string &name) : obj(TAG_Symbol), id(intern_symbol(name.c_str())) {}
+        Symbol(const char *name) : obj(TAG_Symbol), id(intern_symbol(name)) {}
+        Symbol(int id) : obj(TAG_Symbol), id(id) {}
     };
 
-    struct Empty : GCObject
+    struct Empty
     {
-        Empty() : GCObject(TAG_Empty) {}
+        GCObject obj;
+        Empty() : obj(TAG_Empty) {}
     };
 
-    struct Procedure : GCObject
+    struct Procedure
     {
+        GCObject obj;
         using subr = GCObject *(*)(const vector<GCObject*>&);
 
         subr func;
@@ -90,20 +100,22 @@ namespace sucheme{
             return func(param);
         }
 
-        Procedure(const subr &func) : GCObject(TAG_Procedure), func(func) {}
+        Procedure(const subr &func) : obj(TAG_Procedure), func(func) {}
     };
 
-    struct Pair : GCObject
+    struct Pair
     {
+        GCObject obj;
         GCObject *car;
         GCObject *cdr;
 
-        Pair(GCObject *car, GCObject *cdr) : GCObject(TAG_Pair), car(car), cdr(cdr) {}
-        Pair(): GCObject(TAG_Pair), car(nullptr), cdr(nullptr) {}
+        Pair(GCObject *car, GCObject *cdr) : obj(TAG_Pair), car(car), cdr(cdr) {}
+        Pair(): obj(TAG_Pair), car(nullptr), cdr(nullptr) {}
     };
 
-    struct LambdaProcedure : GCObject
+    struct LambdaProcedure
     {
+        GCObject obj;
         vector<int> formals;
         Pair *body;
         Environment *environment;
@@ -111,10 +123,11 @@ namespace sucheme{
         LambdaProcedure(const vector<int> &formals,
                         Pair *body,
                         Environment *environment) :
-            GCObject(TAG_LambdaProcedure), formals(formals), body(body), environment(environment) {}
+            obj(TAG_LambdaProcedure), formals(formals), body(body), environment(environment) {}
     };
-    struct LambdaMacro : GCObject
+    struct LambdaMacro
     {
+        GCObject obj;
         vector<int> formals;
         Pair *body;
         Environment *environment;
@@ -122,7 +135,7 @@ namespace sucheme{
         LambdaMacro(const vector<int> &formals,
                         Pair *body,
                         Environment *environment) :
-            GCObject(TAG_LambdaMacro), formals(formals), body(body), environment(environment) {}
+            obj(TAG_LambdaMacro), formals(formals), body(body), environment(environment) {}
     };
 
     template<typename T0,typename T1> T0* dcast(T1 *)
@@ -182,4 +195,7 @@ namespace sucheme{
             throw bad_lisp_cast(ost.str());
         }
     }
+
+#define ucast(a) ((GCObject*)(a))
+
 }

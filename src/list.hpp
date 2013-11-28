@@ -38,7 +38,7 @@ namespace sucheme{
     }
 
     inline GCObject *make_list() {
-        return alloc<Empty>();
+        return ucast(alloc<Empty>());
     }
 
     inline Pair* cons(GCObject *a, GCObject *l)
@@ -49,7 +49,7 @@ namespace sucheme{
     template<class... Rest>
     GCObject* make_list(GCObject *val, Rest... rest)
     {
-        return cons(val, make_list(rest...));
+        return ucast(cons(val, make_list(rest...)));
     }
 
     inline Empty *nil()

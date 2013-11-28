@@ -36,13 +36,13 @@ namespace sucheme {
             if(s[p] == 't') {
                 p++;
                 if(delimiter(s[p]))
-                    return make_parse_result(alloc<Bool>(true), p);
+                    return make_parse_result(ucast(alloc<Bool>(true)), p);
                 else
                     throw unsupported_grammer();
             } else if(s[p] == 'f') {
                 p++;
                 if(delimiter(s[p]))
-                    return make_parse_result(alloc<Bool>(false), p);
+                    return make_parse_result(ucast(alloc<Bool>(false)), p);
                 else 
                     throw unsupported_grammer();
             } else
@@ -50,10 +50,10 @@ namespace sucheme {
         }else if(s[p] == '-' || s[p] == '+') {
             if(delimiter(s[p+1])) {
                 if(s[p] == '+') {
-                    return make_parse_result(alloc<Symbol>("+"), p+1);
+                    return make_parse_result(ucast(alloc<Symbol>("+")), p+1);
                 }
                 else if(s[p] == '-')
-                    return make_parse_result(alloc<Symbol>("-"), p+1);
+                    return make_parse_result(ucast(alloc<Symbol>("-")), p+1);
             }
 
             int64_t ret=0;
@@ -69,7 +69,7 @@ namespace sucheme {
 
             std::tie(ret,p) = parse_int(s,p);
             if(delimiter(s[p]))
-                return make_parse_result(alloc<Number>(sig?ret:-ret), p);
+                return make_parse_result(ucast(alloc<Number>(sig?ret:-ret)), p);
             else
                 throw std::exception();
         }
@@ -78,7 +78,7 @@ namespace sucheme {
             int64_t ret=0;
             std::tie(ret,p) = parse_int(s,p);
             if(delimiter(s[p]))
-                return make_parse_result(alloc<Number>(ret), p);
+                return make_parse_result(ucast(alloc<Number>(ret)), p);
             else
                 throw std::exception();
         }
@@ -86,7 +86,7 @@ namespace sucheme {
         if(s[p] == '(') {
             p++;
             if(s[p] == ')')
-                return make_parse_result(alloc<Empty>(), p+1);
+                return make_parse_result(ucast(alloc<Empty>()), p+1);
 
             auto list = alloc<Pair>();
             Pair *next(list);
@@ -106,7 +106,7 @@ namespace sucheme {
 
                 auto ret = PExpr(s, p);
 
-                next->cdr = alloc<Pair>();
+                next->cdr = ucast(alloc<Pair>());
 
                 next = (Pair*)(next->cdr);
 
@@ -116,16 +116,16 @@ namespace sucheme {
 
                 while(white_space(s[p])) p++;
             }
-            next->cdr = alloc<Empty>();
+            next->cdr = ucast(alloc<Empty>());
         
-            return make_parse_result(list, p+1);
+            return make_parse_result(ucast(list), p+1);
         }
 
         if(initial(s[p])) { // <initial> <subsequent>*
             int start = p;
             while(subsequent(s[++p])) {}
             if(delimiter(s[p]))
-                return make_parse_result(alloc<Symbol>(string(&(s[start]), uint32_t(p - start))), p);
+                return make_parse_result(ucast(alloc<Symbol>(string(&(s[start]), uint32_t(p - start)))), p);
             else
                 throw std::exception();
         }

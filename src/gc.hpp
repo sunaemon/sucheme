@@ -2,6 +2,7 @@
 #include <iostream>
 #include <typeinfo>
 #include "exceptions.hpp"
+#include "gc_objects.hpp"
 
 namespace sucheme{
     const int memsize = 100000000;
@@ -36,9 +37,8 @@ namespace sucheme{
         T *ret = new(unscaned) T(std::forward<Args>(args)...);
         //T *ret = unscaned;
         //init(ret, std::forward<Args>(args)...);
-        ret->whereis = ret; 
+        ret->obj.whereis = ucast(ret);
         unscaned+=sizeof(T);
         return ret;
     }
 }
-
