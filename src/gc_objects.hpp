@@ -2,211 +2,133 @@
 #include "intern.hpp"
 #include <vector>
 #include <string>
-#include "exceptions.hpp"
 #include <sstream>
-#include "show.hpp"
+#include "exceptions.hpp"
+#include <typeinfo>
 
 namespace sucheme{
     using std::string;
     using std::vector;
 
-    enum GCObject_tag{
-        TAG_Null,
-        TAG_Destructed,
-        TAG_Environment,
-        TAG_EnvironmentMap,
-        TAG_Number,
-        TAG_Bool,
-        TAG_Symbol,
-        TAG_Empty,
-        TAG_Procedure,
-        TAG_Pair,
-        TAG_LambdaProcedure,
-        TAG_LambdaMacro,
-    };
-
-
-    struct GCObject;
-    using subr = GCObject *(*)(const vector<GCObject*>&);
-    typedef GCObject *GCPtr;
-
     struct GCObject
     {
-        char tag;
-
-        union {
-            struct {
-                GCPtr whereis;
-            } destructed;
-            struct {
-                GCPtr g;
-                GCPtr l;
-                int id;
-                GCPtr val;
-            } map;
-            struct {
-                GCPtr parent;    //Environment
-                GCPtr env_map;   //EnvironmentMap
-            } env;
-            struct {
-                int integer;
-            } num;
-            struct {
-                bool value;
-            } b;
-            struct {
-                int id;
-            } symbol;
-            struct {
-                subr func;
-            } proc;
-            struct {
-                GCPtr car;
-                GCPtr cdr;
-            } pair;
-            struct {
-                vector<int> formals;
-                GCPtr body;        //Pair
-                GCPtr environment; //Environment
-            } lambda;
-        };
+        virtual ~GCObject(){}
+        GCObject *whereis;
     };
 
-#define define_for_all(f) \
-    f(EnvironmentMap)\
-    f(Environment)\
-    f(Number)\
-    f(Bool)\
-    f(Symbol)\
-    f(Empty)\
-    f(Procedure)\
-    f(Pair)\
-    f(LambdaProcedure)\
-    f(LambdaMacro)
-
-#define dcast_spec(T) \
-    inline GCPtr dcast_##T(GCPtr val) {\
-        if(val->tag == TAG_##T)\
-            return val;\
-        else\
-            return nullptr;\
-    }\
-    inline GCPtr dcast_const_##T(const GCPtr val) {\
-        if(val->tag == TAG_##T)\
-            return val;\
-        else\
-            return nullptr;\
-    }
-
-    define_for_all(dcast_spec)
-
-#define dcast_ex_spec(T) \
-    inline GCPtr dcast_ex_##T(GCPtr a) {\
-        GCPtr ret = dcast_##T(a);\
-        if(ret)\
-            return ret;\
-        else {\
-            std::stringstream ost;\
-            ost <<  "bad_cast: tried to convert " << (int)a->tag << " to " << #T << "\n";\
-            ost << "value:" << show(a);\
-            throw bad_lisp_cast(ost.str());\
-        }\
-    }
-
-    define_for_all(dcast_ex_spec)
-
-    inline void init_EnvironmentMap(GCPtr i, int id, GCPtr val)
+    struct EnvironmentMap : GCObject
     {
-        i->tag = TAG_EnvironmentMap;
-        i->map.g = nullptr;
-        i->map.l = nullptr;
-        i->map.id = id;
-        i->map.val = val;
-    }
+        EnvironmentMap *g;
+        EnvironmentMap *l;
+        
+        int id;
+        GCObject *val;
+        EnvironmentMap(int id, GCObject *val)
+            : g(nullptr), l(nullptr), id(id), val(val) {}
+    };
 
-    inline void init_Environment(GCPtr i, GCPtr parent)
+    struct Environment : GCObject {
+        Environment *parent;
+
+        EnvironmentMap *env_map;
+
+        Environment(Environment *parent)
+        : parent(parent), env_map(nullptr) {}
+    };
+
+    struct Number : GCObject
     {
-        i->tag = TAG_Environment;
-        i->env.parent = parent;
-        i->env.env_map = nullptr;
-    }
+        int integer;
 
-    inline void init_Number(GCPtr i, int integer)
+        Number(int integer) : integer(integer) {}
+    };
+
+    struct Bool : GCObject
     {
-        i->tag = TAG_Number;
-        i->num.integer = integer;
-    }
+        bool value;
 
-    inline void init_Bool(GCPtr i, bool value)
+        Bool(bool value) : value(value) {}
+    };
+
+    struct Symbol : GCObject
     {
-        i->tag = TAG_Bool;
-        i->b.value = value;
-    }
+        int id;
 
-    inline void init_Symbol(GCPtr i, const string &name)
+        Symbol(const string &name) : id(intern_symbol(name.c_str())) {}
+        Symbol(const char *name) : id(intern_symbol(name)) {}
+        Symbol(int id) : id(id) {}
+    };
+
+    struct Empty : GCObject
     {
-        i->tag = TAG_Symbol;
-        i->symbol.id = intern_symbol(name.c_str());
-    }
+        Empty() {}
+    };
 
-    inline void init_Symbol(GCPtr i, const char *name)
+    struct Procedure : GCObject
     {
-        i->tag = TAG_Symbol;
-        i->symbol.id = intern_symbol(name);
-    }
+        using subr = GCObject *(*)(const vector<GCObject*>&);
 
-    inline void init_Symbol(GCPtr i, int id)
+        subr func;
+        
+        GCObject *call(const vector<GCObject*> &param) {
+            return func(param);
+        }
+
+        Procedure(const subr &func) : func(func) {}
+    };
+
+    struct Pair : GCObject
     {
-        i->tag = TAG_Symbol;
-        i->symbol.id = id;
-    }
+        GCObject *car;
+        GCObject *cdr;
 
-    inline void init_Empty(GCPtr i)
+        Pair(GCObject *car, GCObject *cdr) : car(car), cdr(cdr) {}
+        Pair(): car(nullptr), cdr(nullptr) {}
+    };
+
+    struct LambdaProcedure : GCObject
     {
-        i->tag = TAG_Empty;
-    }
-
-    inline void init_Procedure(GCPtr i, const subr &func)
+        vector<int> formals;
+        Pair *body;
+        Environment *environment;
+        
+        LambdaProcedure(const vector<int> &formals,
+                        Pair *body,
+                        Environment *environment) :
+            formals(formals), body(body), environment(environment) {}
+    };
+    struct LambdaMacro : GCObject
     {
-        i->tag = TAG_Procedure;
-        i->proc.func = func;
-    }
+        vector<int> formals;
+        Pair *body;
+        Environment *environment;
+        
+        LambdaMacro(const vector<int> &formals,
+                        Pair *body,
+                        Environment *environment) :
+            formals(formals), body(body), environment(environment) {}
+    };
 
-    inline void init_Pair(GCPtr i, GCPtr car, GCPtr cdr)
+    template<typename T0,typename T1> T0* dcast(T1 *a)
     {
-        i->tag = TAG_Pair;
-        i->pair.car = car;
-        i->pair.cdr = cdr;
+        return dynamic_cast<T0*>(a);
     }
 
-    inline void init_LambdaProcedure(GCPtr i, const vector<int> &formals,
-                                     GCPtr body,
-                                     GCPtr environment)
+    template<typename T0,typename T1> const T0* dcast_const(const T1 *a)
     {
-        dcast_ex_Pair(body);
-        dcast_ex_Environment(body);
-        i->tag = TAG_LambdaProcedure;
-        i->lambda.formals = formals;
-        i->lambda.body = body;
-        i->lambda.environment = environment;
+        return dynamic_cast<const T0*>(a);
     }
 
-    inline void init_LambdaMacro(GCPtr i, const vector<int> &formals,
-                                 GCPtr body,
-                                 GCPtr environment)
+    template<typename T0,typename T1> inline T0* dcast_ex(T1 *a)
     {
-        dcast_ex_Pair(body);
-        dcast_ex_Environment(body);
-        i->tag = TAG_LambdaMacro;
-        i->lambda.formals = formals;
-        i->lambda.body = body;
-        i->lambda.environment = environment;
+        auto ret = dynamic_cast<T0*>(a);
+        if(ret)
+            return std::move(ret);
+        else {
+            std::stringstream ost;
+            ost <<  "bad_cast: tried to convert " << typeid(*a).name() << " to " << typeid(T0).name() << "\n";
+            ost << "value:" << show(a);
+            throw bad_lisp_cast(ost.str());
+        }
     }
-
-
-#define spec_for_all_types(f) f(EnvironmentMap)f(Environment)f(Number)f(Bool)f(Symbol)f(Empty)f(Procedure)f(Pair)f(LabdaProcedure)f(LambdaMacro)
-
-    
-
-
 }

@@ -3,6 +3,7 @@
 #include <iostream>
 #include "environment.hpp"
 #include "gc.hpp"
+#include "gc_objects.hpp"
 
 namespace sucheme{
     using std::string;
@@ -149,6 +150,7 @@ namespace sucheme{
         if(dcast_const<EnvironmentMap>(val))
            return "environmentmap";
 
-        throw not_implemented("cannnot-show:" + to_string(val->tag));
+        throw not_implemented();
+        //throw not_implemented("cannnot-show:" + to_string(val->tag));
     }
 }

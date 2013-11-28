@@ -5,6 +5,7 @@
 #include "exceptions.hpp"
 #include <stdio.h>
 #include "gc.hpp"
+#include "gc_objects.hpp"
 
 namespace sucheme {
     using std::dynamic_pointer_cast;
@@ -35,7 +36,7 @@ namespace sucheme {
             if(s[p] == 't') {
                 p++;
                 if(delimiter(s[p]))
-                    return make_parse_result((GCObject*)alloc<Bool>(true), p);
+                    return make_parse_result(alloc<Bool>(true), p);
                 else
                     throw unsupported_grammer();
             } else if(s[p] == 'f') {
@@ -140,7 +141,7 @@ namespace sucheme {
     }
 
     GCObject *parse(const string &s) {
-        auto ret = PExpr(s);
+        auto ret = PExpr(s,0);
         if(! (ret.pos > 0 && s.length() == (unsigned int)ret.pos)) {
             cerr << "input:" << s.length() << endl;
             cerr << "parsed:" << ret.pos << endl;

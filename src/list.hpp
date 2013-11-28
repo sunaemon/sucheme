@@ -4,6 +4,7 @@
 #include <vector>
 #include "exceptions.hpp"
 #include "gc.hpp"
+#include "gc_objects.hpp"
 #include "generic_functions.hpp"
 
 namespace sucheme{

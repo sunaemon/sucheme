@@ -55,7 +55,7 @@ namespace sucheme{
 
         if(val->whereis != val)
             return val->whereis;
-        
+
         if(auto b = dcast<Bool>(val)) {
             return val->whereis = alloc<Bool>(*b);
         } else if(auto n = dcast<Number>(val))

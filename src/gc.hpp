@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <typeinfo>
-#include "gc_objects.hpp"
+#include "exceptions.hpp"
 
 namespace sucheme{
     const int memsize = 100000000;
@@ -33,11 +33,12 @@ namespace sucheme{
         
         //fprintf(stderr, "alloc %40s (%2ld) from:%10d rest:%10ld\n", typeid(T).name(), sizeof(T), rpos_active_mem(unscaned), allocated_memory());
         
-        //T *ret = new(unscaned) T(std::forward<Args>(args)...);
-        T *ret = unscaned;
-        init(ret, std::forward<Args>(args)...);
+        T *ret = new(unscaned) T(std::forward<Args>(args)...);
+        //T *ret = unscaned;
+        //init(ret, std::forward<Args>(args)...);
         ret->whereis = ret; 
         unscaned+=sizeof(T);
         return ret;
     }
 }
+

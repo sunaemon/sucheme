@@ -1,3 +1,4 @@
+
 AM_CPPFLAGS = -I.
 AM_CFLAGS   = -O2
 AM_CXXFLAGS = -W -Wall -std=c++0x -lpthread -DGTEST_HAS_PTHREAD=1 -pg
@@ -15,4 +16,5 @@ CLEANFILES = core
 INCLUDES = -I$(top_srcdir)/src
 
 check-syntax:
-	$(CXXCOMPILE) -o nul -S ${CHK_SOURCES}
+	$(CXXCOMPILE)  -Wall -Wextra -pedantic -fsyntax-only -o nul -S ${CHK_SOURCES}
+	cppcheck --enable=all --std=c++11 --template gcc -q $(CHK_SOURCES)
