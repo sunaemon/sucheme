@@ -7,12 +7,7 @@
 #include "intern.hpp"
 
 namespace sucheme{
-    using std::string;
     using std::vector;
-    using std::stringstream;
-    using std::to_string;
-    using std::cout;
-    using std::endl;
 
     void init_environment(Environment *e)
     {
@@ -76,8 +71,8 @@ namespace sucheme{
 
    GCObject* print(const vector<GCObject*> &arg) {
         for(auto &i : arg) 
-            cout << show(i);
-        cout << endl;
+            printf(show(i).c_str());
+        printf("\n");
         return ucast(alloc<Empty>());
     }
 

@@ -11,12 +11,7 @@
 #include "intern.hpp"
 
 namespace sucheme{
-    using std::string;
     using std::vector;
-    using std::stringstream;
-    using std::to_string;
-    using std::unique_ptr;
-    using std::dynamic_pointer_cast;
     using std::endl;
 
     GCObject *eval(GCObject* a, Environment *e) {
@@ -41,8 +36,10 @@ namespace sucheme{
 
             auto f = dcast<Symbol>(p->car);
             if(f && f->id == ID_LAMBDA) {
-                if(args.size() != 2)
-                    throw malformed_lambda("malformed_lambda argsize: expected 2 get " + to_string(args.size()));
+                if(args.size() != 2) {
+                    sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", args.size());
+                    throw malformed_lambda(ex_buf);
+                }
 
                 vector<int> formals;
                 ListForeach(dcast_ex<Pair>(args[0]),
@@ -96,8 +93,10 @@ namespace sucheme{
                 }else
                     throw malformed_define();
             } else if(f && f->id == ID_SET) {
-                if(args.size() != 2)
-                    throw malformed_set("malformed_set:args expected 2 but get " + to_string(args.size()));
+                if(args.size() != 2) {
+                    sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,args.size());
+                    throw malformed_set(ex_buf);
+                }
                 env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
                 ret = ucast(nil());
             } else if(f && f->id == ID_BEGIN) {
@@ -138,8 +137,9 @@ namespace sucheme{
                         env_define(e_lambda, lambda->formals[i], args[i]);
                 
                     ret = eval(ucast(lambda->body), e_lambda);
-                } else
+                } else {
                     throw invalid_aplication("invalid_aplication:" + show(ucast(p)) + ";" + show(callee));
+                }
             }
         end:
             //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;

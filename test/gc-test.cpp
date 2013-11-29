@@ -9,12 +9,11 @@
 #include "functions.hpp"
 #include "parser.hpp"
 #include "eval.hpp"
-using namespace sucheme;
-using std::string;
-using std::shared_ptr;
 
 using namespace sucheme;
 using namespace std;
+
+using std::string;
 
 /*TEST(GC, Test1)
 {

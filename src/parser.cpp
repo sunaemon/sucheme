@@ -6,20 +6,16 @@
 #include <stdio.h>
 #include "gc.hpp"
 #include "gc_objects.hpp"
+#include <string.h>
 
 namespace sucheme {
-    using std::dynamic_pointer_cast;
-    using std::static_pointer_cast;
-    using std::cerr;
-    using std::endl;
-
-    std::tuple<int,int> parse_int(const std::string &s, int p) {
+    parse_int_result parse_int(const char *s, int p) {
         int64_t ret=0;
 
         while(digit(s[p])) {
             ret = ret*10 + (s[p++] - '0');
         }
-        return std::make_tuple(ret, p);
+        return {ret, p};
     }
 
     inline parse_result make_parse_result(GCObject *val, int pos)
@@ -27,7 +23,7 @@ namespace sucheme {
         return {val, pos};
     }
 
-    parse_result PExpr(const std::string &s, int32_t p)
+    parse_result PExpr(const char *s, int32_t p)
     {
         while(white_space(s[p])) p++;
 
@@ -67,7 +63,9 @@ namespace sucheme {
                 sig=false;
             }
 
-            std::tie(ret,p) = parse_int(s,p);
+            parse_int_result res = parse_int(s,p);
+            ret = res.val;
+            p = res.pos;
             if(delimiter(s[p]))
                 return make_parse_result(ucast(alloc<Number>(sig?ret:-ret)), p);
             else
@@ -76,7 +74,9 @@ namespace sucheme {
     
         if(digit(s[p])) {
             int64_t ret=0;
-            std::tie(ret,p) = parse_int(s,p);
+            parse_int_result res = parse_int(s,p);
+            ret = res.val;
+            p = res.pos;
             if(delimiter(s[p]))
                 return make_parse_result(ucast(alloc<Number>(ret)), p);
             else
@@ -130,22 +130,23 @@ namespace sucheme {
                 throw std::exception();
         }
 
-        {
-            char buf[256];
-            if(s[p])
-                sprintf(buf, "unsupported_grammer:cannot understand %c at %d in %s", s[p], p, s.c_str());
-            else
-                sprintf(buf, "unsupported_grammer:unexpected eof at %d in %s", p, s.c_str());
-            throw unsupported_grammer(buf);
-        }
+        if(s[p])
+            sprintf(ex_buf, "unsupported_grammer:cannot understand %c at %d in %s", s[p], p, s);
+        else
+            sprintf(ex_buf, "unsupported_grammer:unexpected eof at %d in %s", p, s);
+        throw unsupported_grammer(ex_buf);
     }
 
-    GCObject *parse(const string &s) {
+    GCObject *parse(const char *s, unsigned int length) {
         auto ret = PExpr(s,0);
-        if(! (ret.pos > 0 && s.length() == (unsigned int)ret.pos)) {
-            cerr << "input:" << s.length() << endl;
+        if(! (ret.pos > 0 && length == (unsigned int)ret.pos)) {
+            cerr << "input:" << length << endl;
             cerr << "parsed:" << ret.pos << endl;
         }
         return ret.val;
+    }
+
+    GCObject *parse(const char *s) {
+        return parse(s, strlen(s));
     }
 }

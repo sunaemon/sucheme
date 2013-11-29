@@ -5,6 +5,8 @@
 namespace sucheme{
     using std::exception;
 
+    extern char ex_buf[];
+
 #define EXEPT(T) \
     class T : public exception {\
     std::string str;\

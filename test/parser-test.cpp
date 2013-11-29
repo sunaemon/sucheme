@@ -21,7 +21,7 @@ using namespace std;
 void test_number_parser(int i)
 {
     string s = to_string(i);
-    auto ret = PExpr(s);
+    auto ret = PExpr(s.c_str());
     EXPECT_EQ(i, dcast<Number>(ret.val)->integer);
     EXPECT_EQ((int)s.length(), ret.pos);
 }
@@ -58,14 +58,14 @@ TEST(List, make_list)
     EXPECT_EQ(show(make_list(parse("2"), parse("(3 3)"))), "(2 (3 3))");
 }
 
-void test_parse(const string &s, const string &t)
+void test_parse(const char *s, const char *t)
 {
     auto ret = PExpr(t);
     auto dat = move(ret.val);
     EXPECT_EQ(s, show(dat));
 }
 
-void test_parse(const string &s)
+void test_parse(const char *s)
 {
     test_parse(s,s);
 }

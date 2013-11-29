@@ -18,7 +18,7 @@ int main(int, char**)
 
     init_gc();
 
-    auto e = alloc<Environment>(nullptr);
+    Environment *e = alloc<Environment>(nullptr);
     init_environment(e);
 
     while((command = readline(">> "))) {

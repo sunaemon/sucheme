@@ -48,8 +48,15 @@ namespace sucheme {
         GCObject *val;
         int pos;
     };
+    
+    struct parse_int_result
+    {
+        int64_t val;
+        int pos;
+    };
 
-    std::tuple<int,int> parse_int(const std::string &s, int p);
-    parse_result PExpr(const string &s, int32_t p = 0);
-    GCObject *parse(const string &s);
+    parse_int_result parse_int(const char *s, int p);
+    parse_result PExpr(const char *s, int32_t p = 0);
+    GCObject *parse(const char *s, unsigned int length);
+    GCObject *parse(const char *s);
 }

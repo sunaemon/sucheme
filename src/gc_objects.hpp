@@ -196,6 +196,7 @@ namespace sucheme{
         }
     }
 
-#define ucast(a) ((GCObject*)(a))
+//#define ucast(a) ((GCObject*)(a))
+#define ucast(a) (reinterpret_cast<GCObject*>(a))
 
 }
