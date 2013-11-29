@@ -1,6 +1,4 @@
 #pragma once
-#include <iostream>
-#include <typeinfo>
 #include "exceptions.hpp"
 #include "gc_objects.hpp"
 
@@ -22,9 +20,6 @@ namespace sucheme{
     int rpos_active_mem(void *ptr);
 
     unsigned long allocated_memory();
-
-    using std::cerr;
-    using std::endl;
 
     template<typename T, class ...Args>
     inline T *alloc(Args &&...args)

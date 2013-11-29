@@ -1,4 +1,3 @@
-#include <utility>
 #include <stdio.h>
 #include "gc.hpp"
 #include "exceptions.hpp"
@@ -7,8 +6,6 @@
 #include "show.hpp"
 
 namespace sucheme{
-    using std::to_string;
-
     char *mem[2];
     char *scaned;
     char *unscaned;
@@ -42,8 +39,10 @@ namespace sucheme{
     {
         auto in_active_buf = 0 <= rpos_active_mem(ptr) && rpos_active_mem(ptr) <= memsize;
         auto in_inactive_buf = 0 <= rpos_inactive_mem(ptr) && rpos_inactive_mem(ptr) <= memsize;
-        if(!in_active_buf && !in_inactive_buf)
-            throw object_not_under_gc_control("object_not_under_gc_control" + to_string(rpos_active_mem(ptr)) + ", " + to_string(rpos_inactive_mem(ptr)));
+        if(!in_active_buf && !in_inactive_buf) {
+            sprintf(ex_buf, "object_not_under_gc_control: %d, %d", rpos_active_mem(ptr), rpos_inactive_mem(ptr));
+            throw object_not_under_gc_control(ex_buf);
+        }
         return in_inactive_buf;
     }
     

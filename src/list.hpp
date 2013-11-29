@@ -30,6 +30,12 @@ namespace sucheme{
             throw improper_list();
     }
 
+    inline unsigned int list_length(Pair *list) {
+        unsigned int ret = 0;
+        ListForeach(list, [&](GCObject *){ret++;});
+        return ret;
+    }
+
     inline vector<GCObject*> ListToVector(Pair *list) {
         vector<GCObject *> ret;
         ret.reserve(10);

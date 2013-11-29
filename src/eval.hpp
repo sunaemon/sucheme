@@ -1,9 +1,6 @@
 #pragma once
-#include <memory>
-#include "gc.hpp"
+#include "gc_objects.hpp"
 
 namespace sucheme{
-    using std::shared_ptr;
-
     GCObject *eval(GCObject *a, Environment *e);
 }

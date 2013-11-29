@@ -1,7 +1,4 @@
 #include "parser.hpp"
-#include <sstream>
-#include <iostream>
-#include <memory>
 #include "exceptions.hpp"
 #include <stdio.h>
 #include "gc.hpp"
@@ -138,10 +135,9 @@ namespace sucheme {
     }
 
     GCObject *parse(const char *s, unsigned int length) {
-        auto ret = PExpr(s,0);
+        parse_result ret = PExpr(s,0);
         if(! (ret.pos > 0 && length == (unsigned int)ret.pos)) {
-            cerr << "input:" << length << endl;
-            cerr << "parsed:" << ret.pos << endl;
+            fprintf(stderr, "input:%d\n parsed:%d", length, ret.pos);
         }
         return ret.val;
     }

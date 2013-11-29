@@ -2,14 +2,11 @@
 #include <string>
 #include <map>
 #include "exceptions.hpp"
-#include <sstream>
-#include <iostream>
+#include <stdio.h>
+
 namespace sucheme{
     using std::string;
     using std::map;
-    using std::stringstream;
-    using std::cerr;
-    using std::endl;
 
     static map<string, int> symbol_map { {"lambda", ID_LAMBDA}, {"cond",ID_COND}, {"quote", ID_QUOTE}, {"define", ID_DEFINE}, {"define-macro", ID_DEFINE_MACRO}, {"set!",ID_SET}, {"begin", ID_BEGIN},{"else", ID_ELSE} };
     static int next_id = REGISTERED_ID_COUNT;
@@ -28,17 +25,14 @@ namespace sucheme{
         return itr->second;
     }
 
-    string extern_symbol(int id)
+    const char *extern_symbol(int id)
     {
         for(auto &p : symbol_map)
             if(p.second == id) {
                 //cerr << "extern : recall   " << p.first << " as " <<  id << endl;        
-                return p.first;
+                return p.first.c_str();
             }
-        stringstream ost;
-
-        ost << "not_interned_id : " << id;
-        
-        throw not_interned_symbol(ost.str());
+        sprintf(ex_buf, "not_interned_id:%d", id);
+        throw not_interned_symbol(ex_buf);
     }
 }

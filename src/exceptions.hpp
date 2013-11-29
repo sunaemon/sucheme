@@ -4,6 +4,7 @@
 
 namespace sucheme{
     using std::exception;
+    using std::string;
 
     extern char ex_buf[];
 

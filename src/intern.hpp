@@ -1,9 +1,7 @@
 #pragma once
-#include <string>
 
 namespace sucheme
 {
-    using std::string;
     enum {
         ID_LAMBDA,
         ID_COND,
@@ -17,5 +15,5 @@ namespace sucheme
     };
 
     int intern_symbol(const char *name);
-    string extern_symbol(int id);
+    const char *extern_symbol(int id);
 }

@@ -3,10 +3,6 @@
 
 namespace sucheme
 {
-    using std::cerr;
-    using std::endl;
-    using std::to_string;
-
     struct GCObject;
 
     bool env_map_set(EnvironmentMap *a, int id, GCObject *val)
@@ -69,17 +65,22 @@ namespace sucheme
         if(e->env_map) {
             if(!env_map_set(e->env_map, id, value)){
                 if(e->parent) {
-                    if(!env_map_set(e->env_map, id, value))
-                        throw unbouded_variable("unbouded_variable:" + to_string(id));
-                } else
-                    throw unbouded_variable("unbouded_variable:" + to_string(id));
+                    if(!env_map_set(e->env_map, id, value)) {
+                        sprintf(ex_buf, "unbouded_variable:%d", id);
+                        throw unbouded_variable(ex_buf);
+                    }
+                } else {
+                    sprintf(ex_buf, "unbouded_variable:%d", id);
+                    throw unbouded_variable(ex_buf);
+                }
+                    
             }
         } else {
             e->env_map = alloc<EnvironmentMap>(id,value);
         }            
     }
 
-    void env_map_show(EnvironmentMap *a)
+/*    void env_map_show(EnvironmentMap *a)
     {
         cerr << a->id << " l ";
         if(a->l)
@@ -94,5 +95,5 @@ namespace sucheme
         if(a->g) {
             env_map_show(a->g);
         }
-    }
+        }*/
 }

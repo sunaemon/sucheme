@@ -1,19 +1,12 @@
-#include <sstream>
 #include "list.hpp"
 #include "parser.hpp"
 #include "environment.hpp"
 #include "show.hpp"
-#include <map>
-#include <vector>
-#include <iostream>
 #include "exceptions.hpp"
 #include "generic_functions.hpp"
 #include "intern.hpp"
 
 namespace sucheme{
-    using std::vector;
-    using std::endl;
-
     GCObject *eval(GCObject* a, Environment *e) {
         if(auto s = dcast<Symbol>(a))
             return env_lookup(e, s->id);

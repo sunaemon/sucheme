@@ -1,22 +1,11 @@
 #pragma once
 #include "parser.hpp"
-#include <map>
-#include <exception>
 #include "exceptions.hpp"
-#include <iostream>
 #include "intern.hpp"
 #include "gc_objects.hpp"
 
 namespace sucheme
 {
-    using std::get;
-    using std::move;
-    using std::unique_ptr;
-    using std::map;
-    using std::cerr;
-    using std::endl;
-    using std::to_string;
-
     struct env_map_find_return
     {
         bool found;
@@ -59,8 +48,10 @@ namespace sucheme
         
         if(e->parent)
             return env_lookup(e->parent, id);
-        else
-            throw unbouded_variable("unbouded_variable:" + to_string(id));
+        else {
+            sprintf(ex_buf, "unbouded_variable:%d", id);
+            throw unbouded_variable(ex_buf);
+        }
     }
 
     bool env_have(const Environment *e, int name);
