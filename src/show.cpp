@@ -1,33 +1,30 @@
 #include "parser.hpp"
-#include <sstream>
-#include <iostream>
 #include "environment.hpp"
 #include "gc.hpp"
 #include "gc_objects.hpp"
+#include <string.h>
 
 namespace sucheme{
-    using std::string;
-    using std::vector;
-    using std::stringstream;
-    using std::to_string;
-    using std::endl;
 
-    string memory_location(void *ptr)
+/*    char *memory_location(void *ptr)
     {
-        auto in_active_buf = 0 <= rpos_active_mem(ptr) && rpos_active_mem(ptr) <= memsize;
-        auto in_inactive_buf = 0 <= rpos_inactive_mem(ptr) && rpos_inactive_mem(ptr) <= memsize;
+        bool in_active_buf = 0 <= rpos_active_mem(ptr) && rpos_active_mem(ptr) <= memsize;
+        bool in_inactive_buf = 0 <= rpos_inactive_mem(ptr) && rpos_inactive_mem(ptr) <= memsize;
+
+        char *ret = new char[256];
 
         if(!ptr)
-            return "nullptr";
+            strcpy(ret, "nullptr");
         if(in_inactive_buf)
-            return "inactive: " + to_string(rpos_inactive_mem(ptr));
+            printf("inactive: %d", rpos_inactive_mem(ptr));
         else if(in_active_buf)
-            return "active  : " + to_string(rpos_active_mem(ptr));
+            printf("active: %d", rpos_active_mem(ptr));
         else
-            return "out of gc control";
-    }
+            strcpy(ret, "out of gc control");
+        return ret;
+        }*/
     
-    string showptr(const GCPtr val)
+/*    string showptr(const GCPtr val)
     {
         if(dcast_const<Empty>(val))
             return "Empty\n";
@@ -85,72 +82,76 @@ namespace sucheme{
             ost << " g    : " << memory_location(a->g) << endl;
             return ost.str();
         }
-        throw not_implemented(string("not_implemented ") + typeid(*val).name());
-    }
+        sprintf(ex_buf, "not_implemented: %d", val->tag);
+        throw not_implemented(ex_buf);
+        }*/
 
-    string show(const GCPtr val)
+    char *show(const GCPtr val)
     {
+        char *buf;
+        buf = (char*)malloc(1024);
+        
+        buf[0] = 0;
+
         if(dcast_const<Empty>(val))
-            return "()";
+            sprintf(buf, "()");
         if(auto b =dcast_const<Bool>(val))
-            return b->value ? "#t" : "#f";
+            sprintf(buf, b->value ? "#t" : "#f");
         if(auto num =dcast_const<Number>(val))
-            return to_string(num->integer);
+            sprintf(buf, "%d", num->integer);
         if(auto symbol =dcast_const<Symbol>(val))
-            return extern_symbol(symbol->id);
+            sprintf(buf, "%s", extern_symbol(symbol->id));
         if(auto p =dcast_const<Pair>(val)) {
-            vector<string> buf;
-            
             const Pair *next=p;
+
+            strcat(buf, "(");
             
+            bool flag = false;
+
             for(;;){
-                buf.push_back(show(next->car));
+                if(flag)
+                    strcat(buf, " ");
+                else
+                    flag = true;
+
+                char *str = show(next->car);
+                strcat(buf, str);
+                free(str);
                 
                 if(!dcast_const<Pair>(next->cdr))
                     break;
-                
+
                 next = (Pair*)(next->cdr);
             }
+
+            strcat(buf, ")");
             
-            if(dcast_const<Empty>(next->cdr)) {
-                stringstream ost;
-                ost << "(";
-                bool flag = false;
-                for(auto &s : buf) {
-                    if(flag)
-                        ost << " ";
-                    else
-                        flag = true;
-                    ost << s;
-                }
-                ost << ")";
-                return ost.str();
-            } else {
+            if(!dcast_const<Empty>(next->cdr)) {
+                free(buf);
                 throw std::exception();
             }
         }
         if(auto proc =dcast_const<Procedure>(val)) {
-            stringstream ost;
-            ost << "<Procedure 0x" << std::hex << (unsigned long)proc->func << ">";
-            return ost.str();
+            sprintf(buf ,"<Procedure 0x%lx >", (unsigned long)proc->func);
         }
         if(auto lambdaproc =dcast_const<LambdaProcedure>(val)) {
-            stringstream ost;
-            ost << "<Lambda Procedure (lambda (";
-            for(int i=0; i< lambdaproc->argc; i++)
-                ost << lambdaproc->argv[i] << " ";
+            strcat(buf, "<Lambda Procedure (lambda (");
+            for(int i=0; i< lambdaproc->argc; i++) {
+                strcat(buf, extern_symbol(lambdaproc->argv[i]));
+                strcat(buf, " ");
+            }
             
-            ost << ") ";
-            ost << show(ucast(lambdaproc->body));
-            ost << ")>";
-            return ost.str();
+            strcat(buf, ") ");
+            char *str = show(ucast(lambdaproc->body));
+            strcat(buf, str);
+            free(str);
+            strcat(buf,")>");
         }
         if(dcast_const<Environment>(val))
-           return "environment";
+            sprintf(buf, "environment");
         if(dcast_const<EnvironmentMap>(val))
-           return "environmentmap";
+            sprintf(buf, "environmentmap");
 
-        throw not_implemented();
-        //throw not_implemented("cannnot-show:" + to_string(val->tag));
+        return buf;
     }
 }

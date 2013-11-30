@@ -1,10 +1,7 @@
 #pragma once
 #include "intern.hpp"
-#include <vector>
-#include <string>
-#include <sstream>
 #include "exceptions.hpp"
-#include <typeinfo>
+#include "show.hpp"
 
 namespace sucheme{
     using std::string;
@@ -31,7 +28,6 @@ namespace sucheme{
     };
 
     typedef GCObject *GCPtr;
-    typedef std::vector<GCPtr> vector_ptr;
 
     struct EnvironmentMap
     {
@@ -173,18 +169,26 @@ namespace sucheme{
 
     define_for_all(dcast_const_spec)
 
-    template<typename T0,typename T1> inline T0* dcast_ex(T1 *a)
+    template<typename T0> inline T0 *dcast_ex(GCPtr)
     {
-        auto ret = dcast<T0>(a);
-        if(ret)
-            return ret;
-        else {
-            std::stringstream ost;
-            ost <<  "bad_cast: tried to convert " << typeid(*a).name() << " to " << typeid(T0).name() << "\n";
-            ost << "value:" << show(a);
-            throw bad_lisp_cast(ost.str());
-        }
+        throw not_implemented();
     }
+
+#define dcast_ex_spec(T0) \
+    template<> inline T0* dcast_ex<T0>(GCPtr a)  \
+    {\
+        auto ret = dcast<T0>(a);\
+        if(ret)\
+            return ret;\
+        else {\
+            char *buf = show(a);\
+            sprintf(ex_buf, "bad_cast: tried to convert %d to %s, value: %s", a->tag, #T0,buf); \
+            free(buf);\
+            throw bad_lisp_cast(ex_buf);\
+        }\
+    }\
+
+    define_for_all(dcast_ex_spec)
 
 //#define ucast(a) ((GCPtr)(a))
 #define ucast(a) (reinterpret_cast<GCPtr>(a))

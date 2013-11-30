@@ -5,6 +5,7 @@
 #include "exceptions.hpp"
 #include "generic_functions.hpp"
 #include "intern.hpp"
+#include "gc_objects.hpp"
 
 namespace sucheme{
     GCPtr eval(GCPtr a, Environment *e) {
@@ -104,10 +105,10 @@ namespace sucheme{
 
                     ret = func->call(eval_argc, eval_args);
                 } else if(auto lambda = dcast<LambdaProcedure>(callee)) {
-                    vector_ptr eval_args;
+                    GCPtr eval_args[LAMBDA_MAX_ARG];
             
                     for(unsigned int i=0; i<argc; i++)
-                        eval_args.push_back(eval(args[i], e));
+                        eval_args[i] = eval(args[i], e);
 
                     auto e_lambda = alloc<Environment>(e);
                 
@@ -115,13 +116,17 @@ namespace sucheme{
                         throw not_implemented("wrong number of args");
                 
                     for(unsigned int i=0; i<argc; i++) {
-                        //printf("i:%d, lambda->argv[i]:%s, eval_args[i]:%s\n", i, extern_symbol(lambda->argv[i]), show(eval_args[i]).c_str());
                         env_define(e_lambda, lambda->argv[i], eval_args[i]);
                     }
                 
                     ret = eval(ucast(lambda->body), e_lambda);
                 } else {
-                    throw invalid_aplication("invalid_aplication:" + show(ucast(p)) + ";" + show(callee));
+                    char *p_buf = show(ucast(p));
+                    char *callee_buf = show(callee);
+                    sprintf(ex_buf, "invalid_aplication: %s; %s", p_buf, callee_buf);
+                    free(p_buf);
+                    free(callee_buf);
+                    throw invalid_aplication(ex_buf);
                 }
             }
         end:

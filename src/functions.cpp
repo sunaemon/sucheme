@@ -1,5 +1,4 @@
 #include "functions.hpp"
-#include <iostream>
 #include "show.hpp"
 #include "list.hpp"
 #include "parser.hpp"
@@ -7,8 +6,6 @@
 #include "intern.hpp"
 
 namespace sucheme{
-    using std::vector;
-
     void init_environment(Environment *e)
     {
         env_intern_define(e, "+", ucast(alloc<Procedure>(sucheme::add)));
@@ -70,10 +67,13 @@ namespace sucheme{
     }
 
    GCPtr print(unsigned int argc, const GCPtr argv[]) {
-        for(unsigned int i=0; i<argc; i++)
-            printf(show(argv[i]).c_str());
-        printf("\n");
-        return ucast(alloc<Empty>());
+       for(unsigned int i=0; i<argc; i++) {
+           char *buf = show(argv[i]);
+           puts(buf);
+           free(buf);
+       }
+       printf("\n");
+       return ucast(alloc<Empty>());
     }
 
    GCPtr car(unsigned int argc, const GCPtr argv[]) {

@@ -1,18 +1,10 @@
 #pragma once
-#include <string>
-#include <memory>
-#include <vector>
 #include "exceptions.hpp"
 #include "gc.hpp"
 #include "gc_objects.hpp"
 #include "generic_functions.hpp"
 
 namespace sucheme{
-    using std::string;
-    using std::vector;
-    using std::stringstream;
-    using std::to_string;
-    using std::dynamic_pointer_cast;
 
    template<typename T>
    inline void ListForeach(Pair *list, T callback) {

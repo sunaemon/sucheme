@@ -4,7 +4,6 @@
 #include "eval.hpp"
 #include "functions.hpp"
 #include "gc.hpp"
-#include <iostream>
 
 using namespace std;
 using namespace sucheme;
@@ -25,9 +24,11 @@ int main(int, char**)
         add_history(command);
         
         try {
-            cout << show(eval(parse(command),e)) << endl;
+            char *buf = show(eval(parse(command),e));
+            puts(buf);
+            free(buf);
         } catch (std::exception &e) {
-            cerr << e.what() << endl;
+            fprintf(stderr, "%s", e.what());
         }
         run_gc(e);
 

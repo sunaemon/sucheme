@@ -56,5 +56,5 @@ TEST(GC, Test2)
 
     memset(mem[1-memory_in_used], 0, memsize);
 
-    EXPECT_EQ("a", show(eval(parse("(caar (quote ((a b) a b c)))"),e)));
+    EXPECT_EQ("a", string(show(eval(parse("(caar (quote ((a b) a b c)))"),e))));
 }

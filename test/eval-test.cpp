@@ -27,7 +27,7 @@ public:
     Environment *e;
 };
 
-#define EVAL_TEST(a,b) EXPECT_EQ(show(parse(a)), show(eval(parse(b),e)));
+#define EVAL_TEST(a,b) EXPECT_EQ(string(show(parse(a))), string(show(eval(parse(b),e))));
 
 TEST_F(EvalTest, Plus)
 {

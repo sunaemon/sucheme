@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 
 namespace sucheme{
     using std::string;
@@ -7,7 +6,7 @@ namespace sucheme{
     struct GCObject;
     typedef GCObject *GCPtr;
 
-    string showptr(const GCPtr val);
-    string show(const GCPtr val);
-    string memory_location(void *ptr);
+    char *showptr(const GCPtr val);
+    char *show(const GCPtr val);
+    char *memory_location(void *ptr);
 }
