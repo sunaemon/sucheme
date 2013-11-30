@@ -88,23 +88,23 @@ namespace sucheme{
                 env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
                 ret = ucast(nil());
             } else if(f && f->id == ID_BEGIN) {
-                for(auto &i : args)
-                    ret = eval(i, e);
+                for(unsigned int i=0; i<argc; i++)
+                    ret = eval(args[i], e);
             } else { // application is function call
                 auto callee = eval(p->car, e);
             
                 if(auto func = dcast<Procedure>(callee)) {
                     vector_ptr eval_args;
-            
-                    for(auto &v : args)
-                        eval_args.push_back(eval(v, e));
+
+                    for(unsigned int i=0; i<argc; i++)
+                        eval_args.push_back(eval(args[i], e));
 
                     ret = func->call(eval_args);
                 } else if(auto lambda = dcast<LambdaProcedure>(callee)) {
                     vector_ptr eval_args;
             
-                    for(auto &v : args)
-                        eval_args.push_back(eval(v, e));
+                    for(unsigned int i=0; i<argc; i++)
+                        eval_args.push_back(eval(args[i], e));
 
                     auto e_lambda = alloc<Environment>(e);
                 
@@ -125,6 +125,7 @@ namespace sucheme{
             //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;
             return ret;
         }
-        throw not_implemented();
+        sprintf(ex_buf, "not_implemented:%d", a->tag);
+        throw not_implemented(ex_buf);
     }
 }

@@ -69,8 +69,6 @@ namespace sucheme{
             return val->whereis = ucast(alloc<Procedure>(*pc));
         else if(auto lp = dcast<LambdaProcedure>(val))
             return val->whereis = ucast(alloc<LambdaProcedure>(*lp));
-        else if(auto lm = dcast<LambdaMacro>(val))
-            return val->whereis = ucast(alloc<LambdaMacro>(*lm));
         else if(auto e = dcast<Environment>(val))
             return val->whereis = ucast(alloc<Environment>(*e));
         else if(auto a = dcast<EnvironmentMap>(val))
@@ -126,10 +124,6 @@ namespace sucheme{
                 lp->body = (Pair*)copy(ucast(lp->body));
                 lp->environment = (Environment*)copy(ucast(lp->environment));
                 scaned += sizeof(LambdaProcedure);
-            } else if(auto lm = dcast<LambdaMacro>(val)) {
-                lm->body = (Pair*)copy(ucast(lm->body));
-                lm->environment = (Environment*)copy(ucast(lm->environment));
-                scaned += sizeof(LambdaMacro);
             } else if(auto e = dcast<Environment>(val)) {
                 e->env_map = (EnvironmentMap*)copy(ucast(e->env_map));
                 if(e->parent)

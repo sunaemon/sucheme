@@ -22,7 +22,6 @@ namespace sucheme{
         TAG_Procedure,
         TAG_Pair,
         TAG_LambdaProcedure,
-        TAG_LambdaMacro,
     };
 
     struct GCObject
@@ -131,20 +130,6 @@ namespace sucheme{
             obj(TAG_LambdaProcedure), body(body), environment(environment) {}
     };
 
-    struct LambdaMacro
-    {
-        GCObject obj;
-        int formals[LAMBDA_MAX_ARG];
-        int argc;
-        int argv[LAMBDA_MAX_ARG];
-        Pair *body;
-        Environment *environment;
-        
-        LambdaMacro(Pair *body,
-                    Environment *environment) :
-            obj(TAG_LambdaMacro), body(body), environment(environment) {}
-    };
-
     template<typename T0> T0* dcast(GCPtr)
     {
         throw not_implemented();
@@ -160,8 +145,7 @@ namespace sucheme{
     f(Empty)\
     f(Procedure)\
     f(Pair)\
-    f(LambdaProcedure)\
-    f(LambdaMacro)
+    f(LambdaProcedure)
 
 #define dcast_spec(T0) \
     template<> inline T0* dcast<T0>(GCPtr a) \
