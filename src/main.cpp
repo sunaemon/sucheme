@@ -6,7 +6,6 @@
 #include "gc.hpp"
 
 using namespace std;
-using namespace sucheme;
 
 int main(int, char**)
 {

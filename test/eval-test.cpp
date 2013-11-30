@@ -13,7 +13,7 @@
 #include "show.hpp"
 #include "gc.hpp"
 #include "intern.hpp"
-using namespace sucheme;
+
 using namespace std;
 
 class EvalTest : public ::testing::Test {

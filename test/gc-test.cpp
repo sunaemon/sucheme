@@ -10,7 +10,6 @@
 #include "parser.hpp"
 #include "eval.hpp"
 
-using namespace sucheme;
 using namespace std;
 
 using std::string;
@@ -48,7 +47,7 @@ TEST(GC, Test2)
     run_gc(nullenv);
 
     auto e = alloc<Environment>(nullptr);
-    env_intern_define(e, "car", ucast(alloc<Procedure>(sucheme::car)));
+    env_intern_define(e, "car", ucast(alloc<Procedure>(car)));
 
     eval(parse("(define caar (lambda (x) (car (car x))))"),e);
 

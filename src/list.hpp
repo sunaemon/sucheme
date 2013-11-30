@@ -4,66 +4,65 @@
 #include "gc_objects.hpp"
 #include "generic_functions.hpp"
 
-namespace sucheme{
 
-   template<typename T>
-   inline void ListForeach(Pair *list, T callback) {
-        Pair *l = list;
-        Pair *ll;
 
-        for(;;){
-            callback(l->car);
-            ll = dcast<Pair>(l->cdr);
-            if(!ll) break;
-            l = ll;
-        }
+template<typename T>
+inline void ListForeach(Pair *list, T callback) {
+    Pair *l = list;
+    Pair *ll;
 
-        if(!dcast<Empty>(l->cdr)) {
-            sprintf(ex_buf, "improper_list");
-            throw_jump();
-        }
+    for(;;){
+        callback(l->car);
+        ll = dcast<Pair>(l->cdr);
+        if(!ll) break;
+        l = ll;
     }
 
-    inline unsigned int list_length(Pair *list) {
-        unsigned int ret = 0;
-        ListForeach(list, [&](GCPtr ){ret++;});
-        return ret;
+    if(!dcast<Empty>(l->cdr)) {
+        sprintf(ex_buf, "improper_list");
+        throw_jump();
     }
+}
 
-    inline unsigned int ListToArray(GCPtr a[],Pair *list) {
-        unsigned int i=0;
-        ListForeach(list,[&](GCPtr v){
-                if(i >= LAMBDA_MAX_ARG) {
-                    sprintf(ex_buf, "too_many_argument");
-                    throw_jump();
-                }
-                a[i++] = v;
-            });
-        return i;
-    }
+inline unsigned int list_length(Pair *list) {
+    unsigned int ret = 0;
+    ListForeach(list, [&](GCPtr ){ret++;});
+    return ret;
+}
 
-    inline Pair* cons(GCPtr a, GCPtr l)
-    {
-        return alloc<Pair>(a, l);
-    }
+inline unsigned int ListToArray(GCPtr a[],Pair *list) {
+    unsigned int i=0;
+    ListForeach(list,[&](GCPtr v){
+            if(i >= LAMBDA_MAX_ARG) {
+                sprintf(ex_buf, "too_many_argument");
+                throw_jump();
+            }
+            a[i++] = v;
+        });
+    return i;
+}
 
-    inline GCPtr make_list() {
-        return ucast(alloc<Empty>());
-    }
+inline Pair* cons(GCPtr a, GCPtr l)
+{
+    return alloc<Pair>(a, l);
+}
 
-    template<class... Rest>
-    GCPtr make_list(GCPtr val, Rest... rest)
-    {
-        return ucast(cons(val, make_list(rest...)));
-    }
+inline GCPtr make_list() {
+    return ucast(alloc<Empty>());
+}
 
-    inline Empty *nil()
-    {
-        return alloc<Empty>();
-    }
+template<class... Rest>
+GCPtr make_list(GCPtr val, Rest... rest)
+{
+    return ucast(cons(val, make_list(rest...)));
+}
 
-    inline Symbol *make_symbol(const char *name)
-    {
-        return alloc<Symbol>(name);
-    }
+inline Empty *nil()
+{
+    return alloc<Empty>();
+}
+
+inline Symbol *make_symbol(const char *name)
+{
+    return alloc<Symbol>(name);
 }

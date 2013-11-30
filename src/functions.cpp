@@ -5,17 +5,17 @@
 #include "eval.hpp"
 #include "intern.hpp"
 
-namespace sucheme{
+
     void init_environment(Environment *e)
     {
-        env_intern_define(e, "+", ucast(alloc<Procedure>(sucheme::add)));
-        env_intern_define(e, "=", ucast(alloc<Procedure>(sucheme::eq)));
-        env_intern_define(e, "*", ucast(alloc<Procedure>(sucheme::mul)));
-        env_intern_define(e, "-", ucast(alloc<Procedure>(sucheme::sub)));
-        env_intern_define(e, "car", ucast(alloc<Procedure>(sucheme::car)));
-        env_intern_define(e, "cdr", ucast(alloc<Procedure>(sucheme::cdr)));
-        env_intern_define(e, "print", ucast(alloc<Procedure>(sucheme::print)));
-        env_intern_define(e, "null?", ucast(alloc<Procedure>(sucheme::null_is)));
+        env_intern_define(e, "+", ucast(alloc<Procedure>(add)));
+        env_intern_define(e, "=", ucast(alloc<Procedure>(eq)));
+        env_intern_define(e, "*", ucast(alloc<Procedure>(mul)));
+        env_intern_define(e, "-", ucast(alloc<Procedure>(sub)));
+        env_intern_define(e, "car", ucast(alloc<Procedure>(car)));
+        env_intern_define(e, "cdr", ucast(alloc<Procedure>(cdr)));
+        env_intern_define(e, "print", ucast(alloc<Procedure>(print)));
+        env_intern_define(e, "null?", ucast(alloc<Procedure>(null_is)));
         env_intern_define(e, "else", ucast(alloc<Bool>(true)));
         
         eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
@@ -104,13 +104,12 @@ namespace sucheme{
            throw_jump();
        }
        return ucast(cons(argv[0], argv[1]));
-    }
+   }
 
-   GCPtr null_is(unsigned int argc, const GCPtr argv[]) {
-       if(argc != 1) {
-           sprintf(ex_buf, "invalid_aplication:null? %d", argc);
-           throw_jump();
-       }
-       return ucast(alloc<Bool>(dcast<Empty>(argv[0])));
+GCPtr null_is(unsigned int argc, const GCPtr argv[]) {
+    if(argc != 1) {
+        sprintf(ex_buf, "invalid_aplication:null? %d", argc);
+        throw_jump();
     }
+    return ucast(alloc<Bool>(dcast<Empty>(argv[0])));
 }

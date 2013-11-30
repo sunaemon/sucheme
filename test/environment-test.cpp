@@ -7,7 +7,6 @@
 #include "gc.hpp"
 #include "intern.hpp"
 
-using namespace sucheme;
 using namespace std;
 
 TEST(Environment_test, test1)

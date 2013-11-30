@@ -11,11 +11,6 @@
 #include "list.hpp"
 #include "show.hpp"
 
-using namespace sucheme;
-using std::string;
-using std::shared_ptr;
-
-using namespace sucheme;
 using namespace std;
 
 void test_number_parser(int i)
