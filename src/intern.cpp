@@ -33,6 +33,6 @@ namespace sucheme{
                 return p.first.c_str();
             }
         sprintf(ex_buf, "not_interned_id:%d", id);
-        throw not_interned_symbol(ex_buf);
+        longjmp(ex_jbuf,0);
     }
 }

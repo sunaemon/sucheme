@@ -1,10 +1,9 @@
 #pragma once
 #include "exceptions.hpp"
 #include "generic_functions.hpp"
+#include <stdint.h>
 
 namespace sucheme {
-    using std::string;
-
     inline bool white_space(wchar_t c) {
         return c==' ' || c == '\n';
     }

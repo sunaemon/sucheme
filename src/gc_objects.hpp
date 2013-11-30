@@ -2,10 +2,9 @@
 #include "intern.hpp"
 #include "exceptions.hpp"
 #include "show.hpp"
+#include <stdlib.h>
 
 namespace sucheme{
-    using std::string;
-
     enum GCObject_tag{
         TAG_Null,
         TAG_Destructed,
@@ -75,7 +74,6 @@ namespace sucheme{
         GCObject obj;
         int id;
 
-        Symbol(const string &name) : obj(TAG_Symbol), id(intern_symbol(name.c_str())) {}
         Symbol(const char *name) : obj(TAG_Symbol), id(intern_symbol(name)) {}
         Symbol(int id) : obj(TAG_Symbol), id(id) {}
     };
@@ -117,17 +115,18 @@ namespace sucheme{
         GCObject obj;
         int argc;
         int argv[LAMBDA_MAX_ARG];
-        Pair *body;
+        GCPtr body;
         Environment *environment;
         
-        LambdaProcedure(Pair *body,
+        LambdaProcedure(GCPtr body,
                         Environment *environment) :
             obj(TAG_LambdaProcedure), body(body), environment(environment) {}
     };
 
     template<typename T0> T0* dcast(GCPtr)
     {
-        throw not_implemented();
+        sprintf(ex_buf, "not_implemented");
+        throw_jump();
         //return dynamic_cast<T0*>(a);
     }
 
@@ -155,7 +154,8 @@ namespace sucheme{
 
     template<typename T0> const T0* dcast_const(const GCPtr)
     {
-        throw not_implemented();
+        sprintf(ex_buf, "not_implemented");
+        throw_jump();
     }
 
 #define dcast_const_spec(T0) \
@@ -171,7 +171,8 @@ namespace sucheme{
 
     template<typename T0> inline T0 *dcast_ex(GCPtr)
     {
-        throw not_implemented();
+        sprintf(ex_buf, "not_implemented");
+        throw_jump();
     }
 
 #define dcast_ex_spec(T0) \
@@ -184,7 +185,7 @@ namespace sucheme{
             char *buf = show(a);\
             sprintf(ex_buf, "bad_cast: tried to convert %d to %s, value: %s", a->tag, #T0,buf); \
             free(buf);\
-            throw bad_lisp_cast(ex_buf);\
+            throw_jump();\
         }\
     }\
 

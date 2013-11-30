@@ -128,7 +128,8 @@ namespace sucheme{
             
             if(!dcast_const<Empty>(next->cdr)) {
                 free(buf);
-                throw std::exception();
+                sprintf(ex_buf, "improper list");
+                throw_jump();
             }
         }
         if(auto proc =dcast_const<Procedure>(val)) {

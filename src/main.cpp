@@ -22,13 +22,13 @@ int main(int, char**)
 
     while((command = readline(">> "))) {
         add_history(command);
-        
-        try {
+
+        if(!(setjmp(ex_jbuf))) {
             char *buf = show(eval(parse(command),e));
             puts(buf);
             free(buf);
-        } catch (std::exception &e) {
-            fprintf(stderr, "%s", e.what());
+        } else {
+            fprintf(stderr, "%s\n", ex_buf);
         }
         run_gc(e);
 

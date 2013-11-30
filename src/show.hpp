@@ -1,8 +1,6 @@
 #pragma once
 
 namespace sucheme{
-    using std::string;
-
     struct GCObject;
     typedef GCObject *GCPtr;
 

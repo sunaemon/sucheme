@@ -67,11 +67,11 @@ namespace sucheme
                 if(e->parent) {
                     if(!env_map_set(e->env_map, id, value)) {
                         sprintf(ex_buf, "unbouded_variable:%s", extern_symbol(id));
-                        throw unbouded_variable(ex_buf);
+                        throw_jump();
                     }
                 } else {
                     sprintf(ex_buf, "unbouded_variable:%d", id);
-                    throw unbouded_variable(ex_buf);
+                    throw_jump();
                 }
                     
             }

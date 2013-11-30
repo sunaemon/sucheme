@@ -41,7 +41,7 @@ namespace sucheme{
         auto in_inactive_buf = 0 <= rpos_inactive_mem(ptr) && rpos_inactive_mem(ptr) <= memsize;
         if(!in_active_buf && !in_inactive_buf) {
             sprintf(ex_buf, "object_not_under_gc_control: %d, %d", rpos_active_mem(ptr), rpos_inactive_mem(ptr));
-            throw object_not_under_gc_control(ex_buf);
+            longjmp(ex_jbuf,0);
         }
         return in_inactive_buf;
     }
@@ -73,8 +73,10 @@ namespace sucheme{
             return val->whereis = ucast(alloc<Environment>(*e));
         else if(auto a = dcast<EnvironmentMap>(val))
             return val->whereis = ucast(alloc<EnvironmentMap>(*a));
-        else 
-            throw not_implemented();
+        else {
+            sprintf(ex_buf, "not_implemented");
+            longjmp(ex_jbuf,0);
+        }
     }
             
 
@@ -121,7 +123,7 @@ namespace sucheme{
                 p->cdr = copy(p->cdr);
                 scaned += sizeof(Pair);
             } else if(auto lp = dcast<LambdaProcedure>(val)) {
-                lp->body = (Pair*)copy(ucast(lp->body));
+                lp->body = copy(ucast(lp->body));
                 lp->environment = (Environment*)copy(ucast(lp->environment));
                 scaned += sizeof(LambdaProcedure);
             } else if(auto e = dcast<Environment>(val)) {
@@ -137,9 +139,10 @@ namespace sucheme{
                     a->l = (EnvironmentMap*)copy(ucast(a->l));
                 scaned += sizeof(EnvironmentMap);
             }
-           else 
-                throw not_implemented();
-
+            else {
+                sprintf(ex_buf, "not_implemented");
+                longjmp(ex_jbuf,0);
+            }
            //cerr << "end " << rpos_active_mem(val) << endl;
         }
 

@@ -50,7 +50,7 @@ namespace sucheme
             return env_lookup(e->parent, id);
         else {
             sprintf(ex_buf, "unbouded_variable:%s", extern_symbol(id));
-            throw unbouded_variable(ex_buf);
+            throw_jump();
         }
     }
 

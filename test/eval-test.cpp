@@ -17,7 +17,6 @@ using namespace sucheme;
 using namespace std;
 
 class EvalTest : public ::testing::Test {
-    
 protected:
     virtual void SetUp() {
         e = alloc<Environment>(nullptr);

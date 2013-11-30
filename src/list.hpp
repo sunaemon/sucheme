@@ -18,8 +18,10 @@ namespace sucheme{
             l = ll;
         }
 
-        if(!dcast<Empty>(l->cdr))
-            throw improper_list();
+        if(!dcast<Empty>(l->cdr)) {
+            sprintf(ex_buf, "improper_list");
+            throw_jump();
+        }
     }
 
     inline unsigned int list_length(Pair *list) {
@@ -31,20 +33,22 @@ namespace sucheme{
     inline unsigned int ListToArray(GCPtr a[],Pair *list) {
         unsigned int i=0;
         ListForeach(list,[&](GCPtr v){
-                if(i >= LAMBDA_MAX_ARG)
-                    throw too_many_argument();
+                if(i >= LAMBDA_MAX_ARG) {
+                    sprintf(ex_buf, "too_many_argument");
+                    throw_jump();
+                }
                 a[i++] = v;
             });
         return i;
     }
 
-    inline GCPtr make_list() {
-        return ucast(alloc<Empty>());
-    }
-
     inline Pair* cons(GCPtr a, GCPtr l)
     {
         return alloc<Pair>(a, l);
+    }
+
+    inline GCPtr make_list() {
+        return ucast(alloc<Empty>());
     }
 
     template<class... Rest>
@@ -58,7 +62,7 @@ namespace sucheme{
         return alloc<Empty>();
     }
 
-    inline Symbol *make_symbol(const string &name)
+    inline Symbol *make_symbol(const char *name)
     {
         return alloc<Symbol>(name);
     }

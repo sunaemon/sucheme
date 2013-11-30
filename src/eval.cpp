@@ -33,18 +33,20 @@ namespace sucheme{
             if(f && f->id == ID_LAMBDA) {
                 if(argc != 2) {
                     sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", argc);
-                    throw malformed_lambda(ex_buf);
+                    longjmp(ex_jbuf,0);
                 }
 
-                auto body = dcast_ex<Pair>(args[1]);
+                auto body = args[1];
                 LambdaProcedure *l = alloc<LambdaProcedure>(body, e);
                 int i=0;
                 ListForeach(dcast_ex<Pair>(args[0]),
                             [&](GCPtr v){
                                 if(i<LAMBDA_MAX_ARG)
                                     l->argv[i++] = dcast_ex<Symbol>(v)->id;
-                                else
-                                    throw too_many_argument();
+                                else {
+                                    sprintf(ex_buf, "too_many_argument");
+                                    throw_jump();
+                                }
                             });
                 l->argc = i;
                 ret = ucast(l);
@@ -53,8 +55,10 @@ namespace sucheme{
                     GCPtr values[LAMBDA_MAX_ARG];
                     unsigned int values_size = ListToArray(values, dcast_ex<Pair>(i));
 
-                    if(values_size != 2)
-                        throw malformed_cond();
+                    if(values_size != 2) {
+                        sprintf(ex_buf, "malformed_cond");
+                        throw_jump();
+                    }
 
                     auto val = dcast<Symbol>(values[0]);
 
@@ -66,25 +70,32 @@ namespace sucheme{
                             goto end;
                         }
                 }
-                throw not_implemented();
+                sprintf(ex_buf, "not_implemented");
+                throw_jump();
             } else if(f && f->id == ID_QUOTE) {
-                if(argc != 1)
-                    throw malformed_quote();
+                if(argc != 1) {
+                    sprintf(ex_buf, "malformed_quote");
+                    throw_jump();
+                }
 
                 ret = args[0];
             } else if(f && f->id == ID_DEFINE) {
-                if(argc != 2)
-                    throw malformed_define();
+                if(argc != 2) {
+                    sprintf(ex_buf,"not_implemented");
+                    throw_jump();
+                }
 
                 if(auto symbol = dcast<Symbol>(args[0])) {
                     env_define(e, symbol->id, eval(args[1],e));
                     ret = ucast(symbol);
-                }else
-                    throw malformed_define();
+                } else {
+                    sprintf(ex_buf, "malformed_define");
+                    throw_jump();
+                }
             } else if(f && f->id == ID_SET) {
                 if(argc != 2) {
                     sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,argc);
-                    throw malformed_set(ex_buf);
+                    throw_jump();
                 }
                 env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
                 ret = ucast(nil());
@@ -111,9 +122,11 @@ namespace sucheme{
                         eval_args[i] = eval(args[i], e);
 
                     auto e_lambda = alloc<Environment>(e);
-                
-                    if(argc != (unsigned int)lambda->argc)
-                        throw not_implemented("wrong number of args");
+
+                    if(argc != (unsigned int)lambda->argc) {
+                        sprintf(ex_buf, "not_implemented: wrong number of args");
+                        throw_jump();
+                    }
                 
                     for(unsigned int i=0; i<argc; i++) {
                         env_define(e_lambda, lambda->argv[i], eval_args[i]);
@@ -126,7 +139,7 @@ namespace sucheme{
                     sprintf(ex_buf, "invalid_aplication: %s; %s", p_buf, callee_buf);
                     free(p_buf);
                     free(callee_buf);
-                    throw invalid_aplication(ex_buf);
+                    throw_jump();
                 }
             }
         end:
@@ -134,6 +147,6 @@ namespace sucheme{
             return ret;
         }
         sprintf(ex_buf, "not_implemented:%d", a->tag);
-        throw not_implemented(ex_buf);
+        throw_jump();
     }
 }

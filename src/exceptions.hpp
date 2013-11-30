@@ -1,37 +1,10 @@
 #pragma once
-#include <exception>
-#include <string>
+#include <setjmp.h>
+#include <string.h>
+#include <stdio.h>
 
 namespace sucheme{
-    using std::exception;
-    using std::string;
-
     extern char ex_buf[];
-
-#define EXEPT(T) \
-    class T : public exception {\
-    std::string str;\
-    public:\
-        T(const std::string str = #T) : str(str) {}\
-        const char *what() const noexcept override {return str.c_str(); }\
-    };
-
-    EXEPT(unbouded_variable)
-    EXEPT(not_implemented)
-    EXEPT(improper_list)
-    EXEPT(bad_lisp_cast)
-    EXEPT(invalid_aplication)
-    EXEPT(malformed_lambda)
-    EXEPT(malformed_define)
-    EXEPT(malformed_cond)
-    EXEPT(malformed_letrec)
-    EXEPT(malformed_set)
-    EXEPT(malformed_quote)
-    EXEPT(unsupported_grammer)
-    EXEPT(not_interned_symbol)
-    EXEPT(object_not_under_gc_control)
-    EXEPT(no_memory)
-    EXEPT(too_many_argument)
-#undef EXEPT
-
+    extern jmp_buf ex_jbuf;
+#define throw_jump() {strcat(ex_buf, " in" __FILE__ " on"); sprintf(ex_buf+strlen(ex_buf), " %d", __LINE__); longjmp(ex_jbuf, __LINE__);}
 }

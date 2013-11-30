@@ -4,6 +4,7 @@
 #include "gc.hpp"
 #include "gc_objects.hpp"
 #include <string.h>
+#include <stdint.h>
 
 namespace sucheme {
     parse_int_result parse_int(const char *s, int p) {
@@ -30,16 +31,22 @@ namespace sucheme {
                 p++;
                 if(delimiter(s[p]))
                     return make_parse_result(ucast(alloc<Bool>(true)), p);
-                else
-                    throw unsupported_grammer();
+                else {
+                    sprintf(ex_buf, "unsupported_grammer");
+                    longjmp(ex_jbuf,0);
+                }
             } else if(s[p] == 'f') {
                 p++;
                 if(delimiter(s[p]))
                     return make_parse_result(ucast(alloc<Bool>(false)), p);
-                else 
-                    throw unsupported_grammer();
-            } else
-                throw unsupported_grammer();
+                else {
+                    sprintf(ex_buf, "unsupported_grammer");
+                    longjmp(ex_jbuf,0);
+                }
+            } else {
+                sprintf(ex_buf, "unsupported_grammer");
+                longjmp(ex_jbuf,0);
+            }
         }else if(s[p] == '-' || s[p] == '+') {
             if(delimiter(s[p+1])) {
                 if(s[p] == '+') {
@@ -65,8 +72,10 @@ namespace sucheme {
             p = res.pos;
             if(delimiter(s[p]))
                 return make_parse_result(ucast(alloc<Number>(sig?ret:-ret)), p);
-            else
-                throw std::exception();
+            else {
+                sprintf(ex_buf, "unsupported_grammer");
+                longjmp(ex_jbuf,0);
+            }
         }
     
         if(digit(s[p])) {
@@ -76,8 +85,10 @@ namespace sucheme {
             p = res.pos;
             if(delimiter(s[p]))
                 return make_parse_result(ucast(alloc<Number>(ret)), p);
-            else
-                throw std::exception();
+            else {
+                sprintf(ex_buf, "unsupported_grammer");
+                longjmp(ex_jbuf,0);
+            }
         }
 
         if(s[p] == '(') {
@@ -121,17 +132,23 @@ namespace sucheme {
         if(initial(s[p])) { // <initial> <subsequent>*
             int start = p;
             while(subsequent(s[++p])) {}
-            if(delimiter(s[p]))
-                return make_parse_result(ucast(alloc<Symbol>(string(&(s[start]), uint32_t(p - start)))), p);
-            else
-                throw std::exception();
+            if(delimiter(s[p])) {
+                char buf[256];
+                memcpy(buf, s+start, p-start);
+                buf[p-start] = 0;
+                return make_parse_result(ucast(alloc<Symbol>(buf)), p);
+            } else {
+                sprintf(ex_buf, "unsupported_grammer");
+                longjmp(ex_jbuf,0);
+            }
         }
 
         if(s[p])
             sprintf(ex_buf, "unsupported_grammer:cannot understand %c at %d in %s", s[p], p, s);
-        else
+        else {
             sprintf(ex_buf, "unsupported_grammer:unexpected eof at %d in %s", p, s);
-        throw unsupported_grammer(ex_buf);
+            longjmp(ex_jbuf,0);
+        }
     }
 
     GCPtr parse(const char *s, unsigned int length) {

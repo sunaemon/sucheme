@@ -1,6 +1,7 @@
 #pragma once
 #include "exceptions.hpp"
 #include "gc_objects.hpp"
+#include <new>
 
 namespace sucheme{
     const int memsize = 100000000;
@@ -24,14 +25,13 @@ namespace sucheme{
     template<typename T, class ...Args>
     inline T *alloc(Args &&...args)
     {
-        if((unsigned long)(memsize - (unscaned - mem[memory_in_used])) < sizeof(T))
-            throw no_memory("no memory. please run gc");
+        if((unsigned long)(memsize - (unscaned - mem[memory_in_used])) < sizeof(T)) {
+            sprintf(ex_buf, "no memory. please run gc");
+            throw_jump();
+        }
         
-        //fprintf(stderr, "alloc %40s (%2ld) from:%10d rest:%10ld\n", typeid(T).name(), sizeof(T), rpos_active_mem(unscaned), allocated_memory());
         
-        T *ret = new(unscaned) T(std::forward<Args>(args)...);
-        //T *ret = unscaned;
-        //init(ret, std::forward<Args>(args)...);
+        T *ret = new(unscaned) T(args...);
         ret->obj.whereis = ucast(ret);
         unscaned+=sizeof(T);
         return ret;
