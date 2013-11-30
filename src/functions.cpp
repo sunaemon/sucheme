@@ -27,76 +27,76 @@ namespace sucheme{
         eval(parse("(define cddr (lambda (x) (cdr (cdr x))))"),e);
     }
  
-    GCPtr add(const vector_ptr &arg) {
+    GCPtr add(unsigned int argc, const GCPtr argv[]) {
         int ret=0;
-        for(auto &i : arg) 
-            ret += dcast_ex<Number>(i)->integer;
+        for(unsigned int i=0; i<argc; i++)
+            ret += dcast_ex<Number>(argv[i])->integer;
 
         return ucast(alloc<Number>(ret));
     }
 
-   GCPtr mul(const vector_ptr &arg) {
+   GCPtr mul(unsigned int argc, const GCPtr argv[]) {
         int ret=1;
-        for(auto &i : arg) 
-            ret *= dcast_ex<Number>(i)->integer;
+        for(unsigned int i=0; i<argc; i++)
+            ret *= dcast_ex<Number>(argv[i])->integer;
 
         return ucast(alloc<Number>(ret));
     }
 
-   GCPtr sub(const vector_ptr &arg) {
-        if(arg.size() <= 1)
+   GCPtr sub(unsigned int argc, const GCPtr argv[]) {
+        if(argc <= 1)
             throw invalid_aplication("invalid_aplication:sub");
 
-        int ret=dcast_ex<Number>(arg[0])->integer;
+        int ret=dcast_ex<Number>(argv[0])->integer;
 
-        for(auto i = arg.begin()+1; i<arg.end(); i++) 
-            ret -= dcast_ex<Number>(*i)->integer;
+        for(unsigned int i=1; i<argc; i++)
+            ret -= dcast_ex<Number>(argv[i])->integer;
 
         return ucast(alloc<Number>(ret));
     }
 
-   GCPtr eq(const vector_ptr &arg) {
-       if(arg.size() != 2)
-            throw invalid_aplication("invalid_aplication:eq" + arg.size());
+   GCPtr eq(unsigned int argc, const GCPtr argv[]) {
+       if(argc != 2)
+            throw invalid_aplication("invalid_aplication:eq" + argc);
 
-       return ucast(alloc<Bool>(dcast_ex<Number>(arg[0])->integer == dcast_ex<Number>(arg[1])->integer));
+       return ucast(alloc<Bool>(dcast_ex<Number>(argv[0])->integer == dcast_ex<Number>(argv[1])->integer));
     }
 
-   GCPtr lt(const vector_ptr &arg) {
-       if(arg.size() != 2)
+   GCPtr lt(unsigned int argc, const GCPtr argv[]) {
+       if(argc != 2)
            throw invalid_aplication("invalid_aplication:lt");
 
-       return ucast(alloc<Bool>(dcast_ex<Number>(arg[0])->integer < dcast_ex<Number>(arg[1])->integer));
+       return ucast(alloc<Bool>(dcast_ex<Number>(argv[0])->integer < dcast_ex<Number>(argv[1])->integer));
     }
 
-   GCPtr print(const vector_ptr &arg) {
-        for(auto &i : arg) 
-            printf(show(i).c_str());
+   GCPtr print(unsigned int argc, const GCPtr argv[]) {
+        for(unsigned int i=0; i<argc; i++)
+            printf(show(argv[i]).c_str());
         printf("\n");
         return ucast(alloc<Empty>());
     }
 
-   GCPtr car(const vector_ptr &arg) {
-       if(arg.size() != 1)
-            throw invalid_aplication("invalid_aplication:car" + arg.size());
-       return ucast(dcast_ex<Pair>(arg[0])->car);
+   GCPtr car(unsigned int argc, const GCPtr argv[]) {
+       if(argc != 1)
+            throw invalid_aplication("invalid_aplication:car" + argc);
+       return ucast(dcast_ex<Pair>(argv[0])->car);
     }
 
-   GCPtr cdr(const vector_ptr &arg) {
-       if(arg.size() != 1)
-            throw invalid_aplication("invalid_aplication:car" + arg.size());
-       return ucast(dcast_ex<Pair>(arg[0])->cdr);
+   GCPtr cdr(unsigned int argc, const GCPtr argv[]) {
+       if(argc != 1)
+            throw invalid_aplication("invalid_aplication:car" + argc);
+       return ucast(dcast_ex<Pair>(argv[0])->cdr);
     }
 
-   GCPtr cons(const vector_ptr &arg) {
-       if(arg.size() != 2)
-            throw invalid_aplication("invalid_aplication:cons" + arg.size());
-       return ucast(cons(arg[0], arg[1]));
+   GCPtr cons(unsigned int argc, const GCPtr argv[]) {
+       if(argc != 2)
+            throw invalid_aplication("invalid_aplication:cons" + argc);
+       return ucast(cons(argv[0], argv[1]));
     }
 
-   GCPtr null_is(const vector_ptr &arg) {
-       if(arg.size() != 1)
-            throw invalid_aplication("invalid_aplication:null?" + arg.size());
-       return ucast(alloc<Bool>(dcast<Empty>(arg[0])));
+   GCPtr null_is(unsigned int argc, const GCPtr argv[]) {
+       if(argc != 1)
+            throw invalid_aplication("invalid_aplication:null?" + argc);
+       return ucast(alloc<Bool>(dcast<Empty>(argv[0])));
     }
 }

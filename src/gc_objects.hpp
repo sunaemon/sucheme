@@ -8,7 +8,6 @@
 
 namespace sucheme{
     using std::string;
-    using std::vector;
 
     enum GCObject_tag{
         TAG_Null,
@@ -94,12 +93,12 @@ namespace sucheme{
     struct Procedure
     {
         GCObject obj;
-        using subr = GCPtr (*)(const vector_ptr&);
+        using subr = GCPtr (*)(unsigned int argc, const GCPtr argv[]);
 
         subr func;
         
-        GCPtr call(const vector_ptr &param) {
-            return func(param);
+        GCPtr call(unsigned int argc, const GCPtr argv[]) {
+            return func(argc, argv);
         }
 
         Procedure(const subr &func) : obj(TAG_Procedure), func(func) {}

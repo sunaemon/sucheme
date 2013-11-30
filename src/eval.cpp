@@ -94,12 +94,15 @@ namespace sucheme{
                 auto callee = eval(p->car, e);
             
                 if(auto func = dcast<Procedure>(callee)) {
-                    vector_ptr eval_args;
+                    GCPtr eval_args[LAMBDA_MAX_ARG];
 
-                    for(unsigned int i=0; i<argc; i++)
-                        eval_args.push_back(eval(args[i], e));
+                    int eval_argc=0;
 
-                    ret = func->call(eval_args);
+                    for(unsigned int i=0; i<argc; i++) {
+                        eval_args[eval_argc++] = eval(args[i], e);
+                    }
+
+                    ret = func->call(eval_argc, eval_args);
                 } else if(auto lambda = dcast<LambdaProcedure>(callee)) {
                     vector_ptr eval_args;
             
