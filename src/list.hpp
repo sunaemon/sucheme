@@ -36,11 +36,14 @@ namespace sucheme{
         return ret;
     }
 
-    inline vector_ptr ListToVector(Pair *list) {
-        vector_ptr ret;
-        ret.reserve(10);
-        ListForeach(list,[&ret](GCPtr v){ret.push_back(v);});
-        return ret;
+    inline unsigned int ListToArray(GCPtr a[],Pair *list) {
+        unsigned int i=0;
+        ListForeach(list,[&](GCPtr v){
+                if(i >= LAMBDA_MAX_ARG)
+                    throw too_many_argument();
+                a[i++] = v;
+            });
+        return i;
     }
 
     inline GCPtr make_list() {

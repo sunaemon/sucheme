@@ -21,7 +21,8 @@ namespace sucheme{
         if(auto lambdaproc = dcast<LambdaProcedure>(a))
             return ucast(lambdaproc);
         if(auto p = dcast<Pair>(a)) {
-            vector_ptr args = ListToVector(dcast_ex<Pair>(p->cdr));
+            GCPtr args[LAMBDA_MAX_ARG];
+            unsigned int argc = ListToArray(args, dcast_ex<Pair>(p->cdr));
 
             GCPtr ret = nullptr;
         
@@ -29,8 +30,8 @@ namespace sucheme{
 
             auto f = dcast<Symbol>(p->car);
             if(f && f->id == ID_LAMBDA) {
-                if(args.size() != 2) {
-                    sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", args.size());
+                if(argc != 2) {
+                    sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", argc);
                     throw malformed_lambda(ex_buf);
                 }
 
@@ -48,9 +49,10 @@ namespace sucheme{
                 ret = ucast(l);
             } else if(f && f->id == ID_COND) {
                 for(auto &i : args) {
-                    vector_ptr values = ListToVector(dcast_ex<Pair>(i));
+                    GCPtr values[LAMBDA_MAX_ARG];
+                    unsigned int values_size = ListToArray(values, dcast_ex<Pair>(i));
 
-                    if(values.size() != 2)
+                    if(values_size != 2)
                         throw malformed_cond();
 
                     auto val = dcast<Symbol>(values[0]);
@@ -65,12 +67,12 @@ namespace sucheme{
                 }
                 throw not_implemented();
             } else if(f && f->id == ID_QUOTE) {
-                if(args.size() != 1)
+                if(argc != 1)
                     throw malformed_quote();
 
                 ret = args[0];
             } else if(f && f->id == ID_DEFINE) {
-                if(args.size() != 2)
+                if(argc != 2)
                     throw malformed_define();
 
                 if(auto symbol = dcast<Symbol>(args[0])) {
@@ -79,8 +81,8 @@ namespace sucheme{
                 }else
                     throw malformed_define();
             } else if(f && f->id == ID_SET) {
-                if(args.size() != 2) {
-                    sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,args.size());
+                if(argc != 2) {
+                    sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,argc);
                     throw malformed_set(ex_buf);
                 }
                 env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
@@ -106,10 +108,10 @@ namespace sucheme{
 
                     auto e_lambda = alloc<Environment>(e);
                 
-                    if(args.size() != (unsigned int)lambda->argc)
+                    if(argc != (unsigned int)lambda->argc)
                         throw not_implemented("wrong number of args");
                 
-                    for(unsigned int i=0; i<args.size(); i++) {
+                    for(unsigned int i=0; i<argc; i++) {
                         //printf("i:%d, lambda->argv[i]:%s, eval_args[i]:%s\n", i, extern_symbol(lambda->argv[i]), show(eval_args[i]).c_str());
                         env_define(e_lambda, lambda->argv[i], eval_args[i]);
                     }
