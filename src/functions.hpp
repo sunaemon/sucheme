@@ -15,12 +15,12 @@ namespace sucheme {
     using std::shared_ptr;
 
     void init_environment(Environment *e);
-    GCObject* add(const vector<GCObject* > &arg);
-    GCObject* eq(const vector<GCObject* > &arg);
-    GCObject* sub(const vector<GCObject* > &arg);
-    GCObject* mul(const vector<GCObject* > &arg);
-    GCObject* print(const vector<GCObject* > &arg);
-    GCObject* car(const vector<GCObject* > &arg);
-    GCObject* cdr(const vector<GCObject* > &arg);
-    GCObject* null_is(const vector<GCObject* > &arg);
+    GCPtr add(const vector_ptr &arg);
+    GCPtr eq(const vector_ptr &arg);
+    GCPtr sub(const vector_ptr &arg);
+    GCPtr mul(const vector_ptr &arg);
+    GCPtr print(const vector_ptr &arg);
+    GCPtr car(const vector_ptr &arg);
+    GCPtr cdr(const vector_ptr &arg);
+    GCPtr null_is(const vector_ptr &arg);
 }

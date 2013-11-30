@@ -32,28 +32,28 @@ namespace sucheme{
 
     inline unsigned int list_length(Pair *list) {
         unsigned int ret = 0;
-        ListForeach(list, [&](GCObject *){ret++;});
+        ListForeach(list, [&](GCPtr ){ret++;});
         return ret;
     }
 
-    inline vector<GCObject*> ListToVector(Pair *list) {
-        vector<GCObject *> ret;
+    inline vector_ptr ListToVector(Pair *list) {
+        vector_ptr ret;
         ret.reserve(10);
-        ListForeach(list,[&ret](GCObject *v){ret.push_back(v);});
+        ListForeach(list,[&ret](GCPtr v){ret.push_back(v);});
         return ret;
     }
 
-    inline GCObject *make_list() {
+    inline GCPtr make_list() {
         return ucast(alloc<Empty>());
     }
 
-    inline Pair* cons(GCObject *a, GCObject *l)
+    inline Pair* cons(GCPtr a, GCPtr l)
     {
         return alloc<Pair>(a, l);
     }
 
     template<class... Rest>
-    GCObject* make_list(GCObject *val, Rest... rest)
+    GCPtr make_list(GCPtr val, Rest... rest)
     {
         return ucast(cons(val, make_list(rest...)));
     }

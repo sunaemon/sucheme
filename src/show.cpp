@@ -27,7 +27,7 @@ namespace sucheme{
             return "out of gc control";
     }
     
-    string showptr(const GCObject *val)
+    string showptr(const GCPtr val)
     {
         if(dcast_const<Empty>(val))
             return "Empty\n";
@@ -88,7 +88,7 @@ namespace sucheme{
         throw not_implemented(string("not_implemented ") + typeid(*val).name());
     }
 
-    string show(const GCObject *val)
+    string show(const GCPtr val)
     {
         if(dcast_const<Empty>(val))
             return "()";
@@ -137,9 +137,9 @@ namespace sucheme{
         if(auto lambdaproc =dcast_const<LambdaProcedure>(val)) {
             stringstream ost;
             ost << "<Lambda Procedure (lambda (";
-            for(auto &n : lambdaproc->formals) {
-                ost << n << " ";
-            }
+            for(int i=0; i< lambdaproc->argc; i++)
+                ost << lambdaproc->argv[i] << " ";
+            
             ost << ") ";
             ost << show(ucast(lambdaproc->body));
             ost << ")>";

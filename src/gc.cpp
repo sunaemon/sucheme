@@ -46,7 +46,7 @@ namespace sucheme{
         return in_inactive_buf;
     }
     
-    GCObject *copy(GCObject *val) {
+    GCPtr copy(GCPtr val) {
         if(!have_to_copy(val))
             return val;
 
@@ -104,7 +104,7 @@ namespace sucheme{
             //cerr << scaned - mem[0] << endl;
             //cerr << unscaned - mem[0] << endl;
             
-            GCObject *val = reinterpret_cast<GCObject*>(scaned);
+            GCPtr val = reinterpret_cast<GCPtr>(scaned);
 
             //cerr << endl << rpos_active_mem(val)  << endl << showptr(val);
         

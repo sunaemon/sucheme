@@ -15,7 +15,7 @@ namespace sucheme {
         return {ret, p};
     }
 
-    inline parse_result make_parse_result(GCObject *val, int pos)
+    inline parse_result make_parse_result(GCPtr val, int pos)
     {
         return {val, pos};
     }
@@ -134,7 +134,7 @@ namespace sucheme {
         throw unsupported_grammer(ex_buf);
     }
 
-    GCObject *parse(const char *s, unsigned int length) {
+    GCPtr parse(const char *s, unsigned int length) {
         parse_result ret = PExpr(s,0);
         if(! (ret.pos > 0 && length == (unsigned int)ret.pos)) {
             fprintf(stderr, "input:%d\n parsed:%d", length, ret.pos);
@@ -142,7 +142,7 @@ namespace sucheme {
         return ret.val;
     }
 
-    GCObject *parse(const char *s) {
+    GCPtr parse(const char *s) {
         return parse(s, strlen(s));
     }
 }

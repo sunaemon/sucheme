@@ -9,7 +9,7 @@ namespace sucheme
     struct env_map_find_return
     {
         bool found;
-        GCObject *val;
+        GCPtr val;
     };
 
     inline env_map_find_return env_map_find(const EnvironmentMap *a, int id)
@@ -39,7 +39,7 @@ namespace sucheme
             return false;
     }
 
-    inline GCObject *env_lookup(const Environment *e, int id)  {
+    inline GCPtr env_lookup(const Environment *e, int id)  {
         if(e->env_map) {
             auto ret = env_map_find(e->env_map, id);
             if(ret.found)
@@ -49,15 +49,15 @@ namespace sucheme
         if(e->parent)
             return env_lookup(e->parent, id);
         else {
-            sprintf(ex_buf, "unbouded_variable:%d", id);
+            sprintf(ex_buf, "unbouded_variable:%s", extern_symbol(id));
             throw unbouded_variable(ex_buf);
         }
     }
 
     bool env_have(const Environment *e, int name);
-    void env_define(Environment *e, int name, GCObject *value);
-    void env_set(Environment *e, int name, GCObject *value);
-    inline void env_intern_define(Environment *e, const char *name, GCObject *value) {
+    void env_define(Environment *e, int name, GCPtr value);
+    void env_set(Environment *e, int name, GCPtr value);
+    inline void env_intern_define(Environment *e, const char *name, GCPtr value) {
         env_define(e,intern_symbol(name), value);
     }
 

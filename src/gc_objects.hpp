@@ -32,6 +32,9 @@ namespace sucheme{
         GCObject(char tag) : tag(tag), whereis(nullptr) {}
     };
 
+    typedef GCObject *GCPtr;
+    typedef std::vector<GCPtr> vector_ptr;
+
     struct EnvironmentMap
     {
         GCObject obj;
@@ -40,8 +43,8 @@ namespace sucheme{
         EnvironmentMap *l;
         
         int id;
-        GCObject *val;
-        EnvironmentMap(int id, GCObject *val)
+        GCPtr val;
+        EnvironmentMap(int id, GCPtr val)
             : obj(TAG_EnvironmentMap), g(nullptr), l(nullptr), id(id), val(val) {}
     };
 
@@ -92,11 +95,11 @@ namespace sucheme{
     struct Procedure
     {
         GCObject obj;
-        using subr = GCObject *(*)(const vector<GCObject*>&);
+        using subr = GCPtr (*)(const vector_ptr&);
 
         subr func;
         
-        GCObject *call(const vector<GCObject*> &param) {
+        GCPtr call(const vector_ptr &param) {
             return func(param);
         }
 
@@ -106,39 +109,43 @@ namespace sucheme{
     struct Pair
     {
         GCObject obj;
-        GCObject *car;
-        GCObject *cdr;
+        GCPtr car;
+        GCPtr cdr;
 
-        Pair(GCObject *car, GCObject *cdr) : obj(TAG_Pair), car(car), cdr(cdr) {}
+        Pair(GCPtr car, GCPtr cdr) : obj(TAG_Pair), car(car), cdr(cdr) {}
         Pair(): obj(TAG_Pair), car(nullptr), cdr(nullptr) {}
     };
+
+#define LAMBDA_MAX_ARG 10
 
     struct LambdaProcedure
     {
         GCObject obj;
-        vector<int> formals;
+        int argc;
+        int argv[LAMBDA_MAX_ARG];
         Pair *body;
         Environment *environment;
         
-        LambdaProcedure(const vector<int> &formals,
-                        Pair *body,
+        LambdaProcedure(Pair *body,
                         Environment *environment) :
-            obj(TAG_LambdaProcedure), formals(formals), body(body), environment(environment) {}
+            obj(TAG_LambdaProcedure), body(body), environment(environment) {}
     };
+
     struct LambdaMacro
     {
         GCObject obj;
-        vector<int> formals;
+        int formals[LAMBDA_MAX_ARG];
+        int argc;
+        int argv[LAMBDA_MAX_ARG];
         Pair *body;
         Environment *environment;
         
-        LambdaMacro(const vector<int> &formals,
-                        Pair *body,
-                        Environment *environment) :
-            obj(TAG_LambdaMacro), formals(formals), body(body), environment(environment) {}
+        LambdaMacro(Pair *body,
+                    Environment *environment) :
+            obj(TAG_LambdaMacro), body(body), environment(environment) {}
     };
 
-    template<typename T0,typename T1> T0* dcast(T1 *)
+    template<typename T0> T0* dcast(GCPtr)
     {
         throw not_implemented();
         //return dynamic_cast<T0*>(a);
@@ -157,7 +164,7 @@ namespace sucheme{
     f(LambdaMacro)
 
 #define dcast_spec(T0) \
-    template<> inline T0* dcast<T0, GCObject>(GCObject *a) \
+    template<> inline T0* dcast<T0>(GCPtr a) \
     {\
     if(TAG_##T0 == a->tag)\
         return (T0*)a;\
@@ -167,13 +174,13 @@ namespace sucheme{
 
     define_for_all(dcast_spec)
 
-    template<typename T0,typename T1> const T0* dcast_const(const T1 *)
+    template<typename T0> const T0* dcast_const(const GCPtr)
     {
         throw not_implemented();
     }
 
 #define dcast_const_spec(T0) \
-    template<> inline const T0* dcast_const<T0, GCObject>(const GCObject *a) \
+    template<> inline const T0* dcast_const<T0>(const GCPtr a) \
     {\
     if(TAG_##T0 == a->tag)\
         return (T0*)a;\
@@ -196,7 +203,7 @@ namespace sucheme{
         }
     }
 
-//#define ucast(a) ((GCObject*)(a))
-#define ucast(a) (reinterpret_cast<GCObject*>(a))
+//#define ucast(a) ((GCPtr)(a))
+#define ucast(a) (reinterpret_cast<GCPtr>(a))
 
 }

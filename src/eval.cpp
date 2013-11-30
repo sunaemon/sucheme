@@ -7,7 +7,7 @@
 #include "intern.hpp"
 
 namespace sucheme{
-    GCObject *eval(GCObject* a, Environment *e) {
+    GCPtr eval(GCPtr a, Environment *e) {
         if(auto s = dcast<Symbol>(a))
             return env_lookup(e, s->id);
         if(auto n = dcast<Number>(a))
@@ -21,9 +21,9 @@ namespace sucheme{
         if(auto lambdaproc = dcast<LambdaProcedure>(a))
             return ucast(lambdaproc);
         if(auto p = dcast<Pair>(a)) {
-            vector<GCObject*> args = ListToVector(dcast_ex<Pair>(p->cdr));
+            vector_ptr args = ListToVector(dcast_ex<Pair>(p->cdr));
 
-            GCObject* ret = nullptr;
+            GCPtr ret = nullptr;
         
             //cerr << ">" << show(a) << endl << endl;
 
@@ -34,18 +34,21 @@ namespace sucheme{
                     throw malformed_lambda(ex_buf);
                 }
 
-                vector<int> formals;
-                ListForeach(dcast_ex<Pair>(args[0]),
-                            [&](GCObject* v){
-                                formals.push_back(dcast_ex<Symbol>(v)->id);
-                            });
-
                 auto body = dcast_ex<Pair>(args[1]);
-            
-                ret = ucast(alloc<LambdaProcedure>(formals, body, e));
+                LambdaProcedure *l = alloc<LambdaProcedure>(body, e);
+                int i=0;
+                ListForeach(dcast_ex<Pair>(args[0]),
+                            [&](GCPtr v){
+                                if(i<LAMBDA_MAX_ARG)
+                                    l->argv[i++] = dcast_ex<Symbol>(v)->id;
+                                else
+                                    throw too_many_argument();
+                            });
+                l->argc = i;
+                ret = ucast(l);
             } else if(f && f->id == ID_COND) {
                 for(auto &i : args) {
-                    vector<GCObject*> values = ListToVector(dcast_ex<Pair>(i));
+                    vector_ptr values = ListToVector(dcast_ex<Pair>(i));
 
                     if(values.size() != 2)
                         throw malformed_cond();
@@ -75,16 +78,6 @@ namespace sucheme{
                     ret = ucast(symbol);
                 }else
                     throw malformed_define();
-            } else if(f && f->id == ID_DEFINE_MACRO) {
-                if(args.size() != 2)
-                    throw malformed_define();
-
-                if(auto symbol = dcast<Symbol>(args[0])) {
-                    auto la = dcast_ex<LambdaProcedure>(eval(args[1],e));
-                    env_define(e, symbol->id, ucast(alloc<LambdaMacro>(la->formals, la->body, la->environment)));
-                    ret = ucast(symbol);
-                }else
-                    throw malformed_define();
             } else if(f && f->id == ID_SET) {
                 if(args.size() != 2) {
                     sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,args.size());
@@ -99,35 +92,27 @@ namespace sucheme{
                 auto callee = eval(p->car, e);
             
                 if(auto func = dcast<Procedure>(callee)) {
-                    vector<GCObject*> eval_args;
+                    vector_ptr eval_args;
             
                     for(auto &v : args)
                         eval_args.push_back(eval(v, e));
 
                     ret = func->call(eval_args);
                 } else if(auto lambda = dcast<LambdaProcedure>(callee)) {
-                    vector<GCObject*> eval_args;
+                    vector_ptr eval_args;
             
                     for(auto &v : args)
                         eval_args.push_back(eval(v, e));
 
                     auto e_lambda = alloc<Environment>(e);
                 
-                    if(args.size() != lambda->formals.size())
+                    if(args.size() != (unsigned int)lambda->argc)
                         throw not_implemented("wrong number of args");
                 
-                    for(unsigned int i=0; i<args.size(); i++)
-                        env_define(e_lambda, lambda->formals[i], eval_args[i]);
-                
-                    ret = eval(ucast(lambda->body), e_lambda);
-                } else if(auto lambda = dcast<LambdaMacro>(callee)) {
-                    auto e_lambda = alloc<Environment>(e);
-                
-                    if(args.size() != lambda->formals.size())
-                        throw not_implemented("wrong number of args");
-                
-                    for(unsigned int i=0; i<args.size(); i++)
-                        env_define(e_lambda, lambda->formals[i], args[i]);
+                    for(unsigned int i=0; i<args.size(); i++) {
+                        //printf("i:%d, lambda->argv[i]:%s, eval_args[i]:%s\n", i, extern_symbol(lambda->argv[i]), show(eval_args[i]).c_str());
+                        env_define(e_lambda, lambda->argv[i], eval_args[i]);
+                    }
                 
                     ret = eval(ucast(lambda->body), e_lambda);
                 } else {

@@ -23,7 +23,7 @@ TEST(Environment_test, test1)
     env_intern_define(e, "a", parse("8"));
     env_intern_define(e, "i", parse("9"));
     stringstream ost;
-    env_foreach([&](int id, const GCObject *l){
+    env_foreach([&](int id, const GCPtr l){
             ost << extern_symbol(id) << " = " << show(l) << endl;
         }, e);
     EXPECT_EQ("a = 8\nb = 6\nd = 2\nf = 3\nc = 4\ng = 5\nh = 7\ni = 9\n", ost.str());

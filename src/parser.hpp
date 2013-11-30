@@ -42,7 +42,7 @@ namespace sucheme {
 
     struct parse_result
     {
-        GCObject *val;
+        GCPtr val;
         int pos;
     };
     
@@ -54,6 +54,6 @@ namespace sucheme {
 
     parse_int_result parse_int(const char *s, int p);
     parse_result PExpr(const char *s, int32_t p = 0);
-    GCObject *parse(const char *s, unsigned int length);
-    GCObject *parse(const char *s);
+    GCPtr parse(const char *s, unsigned int length);
+    GCPtr parse(const char *s);
 }

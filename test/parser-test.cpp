@@ -45,7 +45,7 @@ TEST(Parser, List)
 {
     auto ret = PExpr("(1 2)");
 
-    GCObject *dat = ret.val;
+    GCPtr dat = ret.val;
     auto dat_as_pair = dcast<Pair>(dat);
     EXPECT_EQ(1,dcast<Number>(dat_as_pair->car)->integer);
     auto sc = dcast<Pair>(dat_as_pair->cdr);

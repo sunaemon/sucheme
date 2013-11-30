@@ -31,6 +31,7 @@ namespace sucheme{
     EXEPT(not_interned_symbol)
     EXEPT(object_not_under_gc_control)
     EXEPT(no_memory)
+    EXEPT(too_many_argument)
 #undef EXEPT
 
 }

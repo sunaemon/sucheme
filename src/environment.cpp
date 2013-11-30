@@ -5,7 +5,7 @@ namespace sucheme
 {
     struct GCObject;
 
-    bool env_map_set(EnvironmentMap *a, int id, GCObject *val)
+    bool env_map_set(EnvironmentMap *a, int id, GCPtr val)
     {
         EnvironmentMap *next = a;
         for(;;) {
@@ -26,7 +26,7 @@ namespace sucheme
         }
     }
 
-    void env_map_add(EnvironmentMap *a, int id, GCObject *val)
+    void env_map_add(EnvironmentMap *a, int id, GCPtr val)
     {
         EnvironmentMap *next = a;
         for(;;) {
@@ -53,7 +53,7 @@ namespace sucheme
     }
 
 
-    void env_define(Environment *e, int id, GCObject *value) {
+    void env_define(Environment *e, int id, GCPtr value) {
         if(e->env_map)
             env_map_add(e->env_map, id, value); // copy
         else {
@@ -61,12 +61,12 @@ namespace sucheme
         }
     }
 
-    void env_set(Environment *e, int id, GCObject *value) {
+    void env_set(Environment *e, int id, GCPtr value) {
         if(e->env_map) {
             if(!env_map_set(e->env_map, id, value)){
                 if(e->parent) {
                     if(!env_map_set(e->env_map, id, value)) {
-                        sprintf(ex_buf, "unbouded_variable:%d", id);
+                        sprintf(ex_buf, "unbouded_variable:%s", extern_symbol(id));
                         throw unbouded_variable(ex_buf);
                     }
                 } else {

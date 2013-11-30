@@ -27,7 +27,7 @@ namespace sucheme{
         eval(parse("(define cddr (lambda (x) (cdr (cdr x))))"),e);
     }
  
-    GCObject* add(const vector<GCObject*> &arg) {
+    GCPtr add(const vector_ptr &arg) {
         int ret=0;
         for(auto &i : arg) 
             ret += dcast_ex<Number>(i)->integer;
@@ -35,7 +35,7 @@ namespace sucheme{
         return ucast(alloc<Number>(ret));
     }
 
-   GCObject* mul(const vector<GCObject*> &arg) {
+   GCPtr mul(const vector_ptr &arg) {
         int ret=1;
         for(auto &i : arg) 
             ret *= dcast_ex<Number>(i)->integer;
@@ -43,7 +43,7 @@ namespace sucheme{
         return ucast(alloc<Number>(ret));
     }
 
-   GCObject* sub(const vector<GCObject*> &arg) {
+   GCPtr sub(const vector_ptr &arg) {
         if(arg.size() <= 1)
             throw invalid_aplication("invalid_aplication:sub");
 
@@ -55,46 +55,46 @@ namespace sucheme{
         return ucast(alloc<Number>(ret));
     }
 
-   GCObject* eq(const vector<GCObject*> &arg) {
+   GCPtr eq(const vector_ptr &arg) {
        if(arg.size() != 2)
             throw invalid_aplication("invalid_aplication:eq" + arg.size());
 
        return ucast(alloc<Bool>(dcast_ex<Number>(arg[0])->integer == dcast_ex<Number>(arg[1])->integer));
     }
 
-   GCObject* lt(const vector<GCObject*> &arg) {
+   GCPtr lt(const vector_ptr &arg) {
        if(arg.size() != 2)
            throw invalid_aplication("invalid_aplication:lt");
 
        return ucast(alloc<Bool>(dcast_ex<Number>(arg[0])->integer < dcast_ex<Number>(arg[1])->integer));
     }
 
-   GCObject* print(const vector<GCObject*> &arg) {
+   GCPtr print(const vector_ptr &arg) {
         for(auto &i : arg) 
             printf(show(i).c_str());
         printf("\n");
         return ucast(alloc<Empty>());
     }
 
-   GCObject* car(const vector<GCObject*> &arg) {
+   GCPtr car(const vector_ptr &arg) {
        if(arg.size() != 1)
             throw invalid_aplication("invalid_aplication:car" + arg.size());
        return ucast(dcast_ex<Pair>(arg[0])->car);
     }
 
-   GCObject* cdr(const vector<GCObject*> &arg) {
+   GCPtr cdr(const vector_ptr &arg) {
        if(arg.size() != 1)
             throw invalid_aplication("invalid_aplication:car" + arg.size());
        return ucast(dcast_ex<Pair>(arg[0])->cdr);
     }
 
-   GCObject* cons(const vector<GCObject*> &arg) {
+   GCPtr cons(const vector_ptr &arg) {
        if(arg.size() != 2)
             throw invalid_aplication("invalid_aplication:cons" + arg.size());
        return ucast(cons(arg[0], arg[1]));
     }
 
-   GCObject* null_is(const vector<GCObject* > &arg) {
+   GCPtr null_is(const vector_ptr &arg) {
        if(arg.size() != 1)
             throw invalid_aplication("invalid_aplication:null?" + arg.size());
        return ucast(alloc<Bool>(dcast<Empty>(arg[0])));
