@@ -13,12 +13,12 @@ inline void ListForeach(Pair *list, T callback) {
 
     for(;;){
         callback(l->car);
-        ll = dcast<Pair>(l->cdr);
+        ll = dcast_Pair(l->cdr);
         if(!ll) break;
         l = ll;
     }
 
-    if(!dcast<Empty>(l->cdr)) {
+    if(!dcast_Empty(l->cdr)) {
         sprintf(ex_buf, "improper_list");
         throw_jump();
     }

@@ -54,26 +54,29 @@ GCPtr copy(GCPtr val) {
     if(val->whereis != val)
         return val->whereis;
 
-    if(auto b = dcast<Bool>(val)) {
+    if(auto b = dcast_Bool(val)) {
         return val->whereis = ucast(alloc_Bool(b->value));
-    } else if(auto n = dcast<Number>(val))
+    } else if(auto n = dcast_Number(val))
         return val->whereis = ucast(alloc_Number(n->integer));
-    else if(auto s = dcast<Symbol>(val))
+    else if(auto s = dcast_Symbol(val))
         return val->whereis = ucast(alloc_Symbol(s->id));
-    else if(auto p = dcast<Pair>(val))
+    else if(auto p = dcast_Pair(val))
         return val->whereis = ucast(alloc_Pair(p->car, p->cdr));
-    else if(dcast<Empty>(val))
+    else if(dcast_Empty(val))
         return val->whereis = ucast(alloc_Empty());
-    else if(auto pc = dcast<Procedure>(val))
+    else if(auto pc = dcast_Procedure(val))
         return val->whereis = ucast(alloc_Procedure(pc->func));
-    else if(auto lp = dcast<LambdaProcedure>(val))
-        return val->whereis = ucast(alloc_LambdaProcedure(lp->body, lp->environment));
-    else if(auto e = dcast<Environment>(val)) {
+    else if(auto lp = dcast_LambdaProcedure(val)) {
+        LambdaProcedure *new_lp = alloc_LambdaProcedure(lp->body, lp->environment);
+        new_lp -> argc = lp->argc;
+        for(int i=0; i<lp->argc; i++)
+            new_lp -> argv[i] = lp->argv[i];
+        return val->whereis = ucast(new_lp);
+    } else if(auto e = dcast_Environment(val)) {
         Environment *new_e =alloc_Environment(e->parent);
         new_e->env_map = e->env_map;
         return val->whereis = ucast(new_e);
-    }
-    else if(auto a = dcast<EnvironmentMap>(val)) {
+    } else if(auto a = dcast_EnvironmentMap(val)) {
         EnvironmentMap *new_a = alloc_EnvironmentMap(a->id, a->val);
         new_a->g = a->g;
         new_a->l = a->l;
@@ -111,30 +114,30 @@ void run_gc(Environment *&e)
 
         //cerr << endl << rpos_active_mem(val)  << endl << showptr(val);
         
-        if(dcast<Bool>(val))
+        if(dcast_Bool(val))
             scaned += sizeof(Bool);
-        else if(dcast<Number>(val))
+        else if(dcast_Number(val))
             scaned += sizeof(Number);
-        else if(dcast<Symbol>(val)) {
+        else if(dcast_Symbol(val)) {
             scaned += sizeof(Symbol);
-        } else if(dcast<Empty>(val))
+        } else if(dcast_Empty(val))
             scaned += sizeof(Empty);
-        else if(dcast<Procedure>(val))
+        else if(dcast_Procedure(val))
             scaned += sizeof(Procedure);
-        else if(auto p = dcast<Pair>(val)) {
+        else if(auto p = dcast_Pair(val)) {
             p->car = copy(p->car);
             p->cdr = copy(p->cdr);
             scaned += sizeof(Pair);
-        } else if(auto lp = dcast<LambdaProcedure>(val)) {
+        } else if(auto lp = dcast_LambdaProcedure(val)) {
             lp->body = copy(ucast(lp->body));
             lp->environment = (Environment*)copy(ucast(lp->environment));
             scaned += sizeof(LambdaProcedure);
-        } else if(auto e = dcast<Environment>(val)) {
+        } else if(auto e = dcast_Environment(val)) {
             e->env_map = (EnvironmentMap*)copy(ucast(e->env_map));
             if(e->parent)
                 e->parent = (Environment*)copy(ucast(e->parent));
             scaned += sizeof(Environment);
-        } else if(auto a = dcast<EnvironmentMap>(val)) {
+        } else if(auto a = dcast_EnvironmentMap(val)) {
             a->val = copy(a->val);
             if(a->g)
                 a->g = (EnvironmentMap*)copy(ucast(a->g));

@@ -8,27 +8,27 @@
 #include "gc_objects.hpp"
 
 GCPtr eval(GCPtr a, Environment *e) {
-    if(auto s = dcast<Symbol>(a))
+    if(auto s = dcast_Symbol(a))
         return env_lookup(e, s->id);
-    if(auto n = dcast<Number>(a))
+    if(auto n = dcast_Number(a))
         return ucast(n);
-    if(auto b = dcast<Bool>(a))
+    if(auto b = dcast_Bool(a))
         return ucast(b);
-    if(auto empty = dcast<Empty>(a))
+    if(auto empty = dcast_Empty(a))
         return ucast(empty);
-    if(auto proc = dcast<Procedure>(a))
+    if(auto proc = dcast_Procedure(a))
         return ucast(proc);
-    if(auto lambdaproc = dcast<LambdaProcedure>(a))
+    if(auto lambdaproc = dcast_LambdaProcedure(a))
         return ucast(lambdaproc);
-    if(auto p = dcast<Pair>(a)) {
+    if(auto p = dcast_Pair(a)) {
         GCPtr args[LAMBDA_MAX_ARG];
-        unsigned int argc = ListToArray(args, dcast_ex<Pair>(p->cdr));
+        unsigned int argc = ListToArray(args, dcast_ex_Pair(p->cdr));
 
         GCPtr ret = nullptr;
         
         //cerr << ">" << show(a) << endl << endl;
 
-        auto f = dcast<Symbol>(p->car);
+        auto f = dcast_Symbol(p->car);
         if(f && f->id == ID_LAMBDA) {
             if(argc != 2) {
                 sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", argc);
@@ -38,10 +38,10 @@ GCPtr eval(GCPtr a, Environment *e) {
             auto body = args[1];
             LambdaProcedure *l = alloc_LambdaProcedure(body, e);
             int i=0;
-            ListForeach(dcast_ex<Pair>(args[0]),
+            ListForeach(dcast_ex_Pair(args[0]),
                         [&](GCPtr v){
                             if(i<LAMBDA_MAX_ARG)
-                                l->argv[i++] = dcast_ex<Symbol>(v)->id;
+                                l->argv[i++] = dcast_ex_Symbol(v)->id;
                             else {
                                 sprintf(ex_buf, "too_many_argument");
                                 throw_jump();
@@ -52,18 +52,18 @@ GCPtr eval(GCPtr a, Environment *e) {
         } else if(f && f->id == ID_COND) {
             for(auto &i : args) {
                 GCPtr values[LAMBDA_MAX_ARG];
-                unsigned int values_size = ListToArray(values, dcast_ex<Pair>(i));
+                unsigned int values_size = ListToArray(values, dcast_ex_Pair(i));
 
                 if(values_size != 2) {
                     sprintf(ex_buf, "malformed_cond");
                     throw_jump();
                 }
 
-                auto val = dcast<Symbol>(values[0]);
+                auto val = dcast_Symbol(values[0]);
 
                 if(val && val->id == ID_ELSE)
                     ret = eval(values[1], e);
-                else if(auto val = dcast<Bool>(eval(values[0],e)))
+                else if(auto val = dcast_Bool(eval(values[0],e)))
                     if(val->value) {
                         ret = eval(values[1], e);
                         goto end;
@@ -84,7 +84,7 @@ GCPtr eval(GCPtr a, Environment *e) {
                 throw_jump();
             }
 
-            if(auto symbol = dcast<Symbol>(args[0])) {
+            if(auto symbol = dcast_Symbol(args[0])) {
                 env_define(e, symbol->id, eval(args[1],e));
                 ret = ucast(symbol);
             } else {
@@ -96,7 +96,7 @@ GCPtr eval(GCPtr a, Environment *e) {
                 sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,argc);
                 throw_jump();
             }
-            env_set(e, dcast_ex<Symbol>(args[0])->id, eval(args[1], e));
+            env_set(e, dcast_ex_Symbol(args[0])->id, eval(args[1], e));
             ret = ucast(nil());
         } else if(f && f->id == ID_BEGIN) {
             for(unsigned int i=0; i<argc; i++)
@@ -104,7 +104,7 @@ GCPtr eval(GCPtr a, Environment *e) {
         } else { // application is function call
             auto callee = eval(p->car, e);
             
-            if(auto func = dcast<Procedure>(callee)) {
+            if(auto func = dcast_Procedure(callee)) {
                 GCPtr eval_args[LAMBDA_MAX_ARG];
 
                 int eval_argc=0;
@@ -114,7 +114,7 @@ GCPtr eval(GCPtr a, Environment *e) {
                 }
 
                 ret = func->call(eval_argc, eval_args);
-            } else if(auto lambda = dcast<LambdaProcedure>(callee)) {
+            } else if(auto lambda = dcast_LambdaProcedure(callee)) {
                 GCPtr eval_args[LAMBDA_MAX_ARG];
             
                 for(unsigned int i=0; i<argc; i++)

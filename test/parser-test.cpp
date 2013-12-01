@@ -17,7 +17,7 @@ void test_number_parser(int i)
 {
     string s = to_string(i);
     auto ret = PExpr(s.c_str());
-    EXPECT_EQ(i, dcast<Number>(ret.val)->integer);
+    EXPECT_EQ(i, dcast_Number(ret.val)->integer);
     EXPECT_EQ((int)s.length(), ret.pos);
 }
 
@@ -41,11 +41,11 @@ TEST(Parser, List)
     auto ret = PExpr("(1 2)");
 
     GCPtr dat = ret.val;
-    auto dat_as_pair = dcast<Pair>(dat);
-    EXPECT_EQ(1,dcast<Number>(dat_as_pair->car)->integer);
-    auto sc = dcast<Pair>(dat_as_pair->cdr);
-    EXPECT_EQ(2,dcast<Number>(sc->car)->integer);
-    dcast_ex<Empty>(sc->cdr);
+    auto dat_as_pair = dcast_Pair(dat);
+    EXPECT_EQ(1,dcast_Number(dat_as_pair->car)->integer);
+    auto sc = dcast_Pair(dat_as_pair->cdr);
+    EXPECT_EQ(2,dcast_Number(sc->car)->integer);
+    dcast_ex_Empty(sc->cdr);
 }
 
 TEST(List, make_list)

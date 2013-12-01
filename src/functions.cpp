@@ -27,7 +27,7 @@
     GCPtr add(unsigned int argc, const GCPtr argv[]) {
         int ret=0;
         for(unsigned int i=0; i<argc; i++)
-            ret += dcast_ex<Number>(argv[i])->integer;
+            ret += dcast_ex_Number(argv[i])->integer;
 
         return ucast(alloc_Number(ret));
     }
@@ -35,7 +35,7 @@
    GCPtr mul(unsigned int argc, const GCPtr argv[]) {
         int ret=1;
         for(unsigned int i=0; i<argc; i++)
-            ret *= dcast_ex<Number>(argv[i])->integer;
+            ret *= dcast_ex_Number(argv[i])->integer;
 
         return ucast(alloc_Number(ret));
     }
@@ -46,10 +46,10 @@
             throw_jump();
        }
 
-       int ret=dcast_ex<Number>(argv[0])->integer;
+       int ret=dcast_ex_Number(argv[0])->integer;
        
        for(unsigned int i=1; i<argc; i++)
-           ret -= dcast_ex<Number>(argv[i])->integer;
+           ret -= dcast_ex_Number(argv[i])->integer;
        
        return ucast(alloc_Number(ret));
    }
@@ -60,7 +60,7 @@
            throw_jump();
        }
 
-       return ucast(alloc_Bool(dcast_ex<Number>(argv[0])->integer == dcast_ex<Number>(argv[1])->integer));
+       return ucast(alloc_Bool(dcast_ex_Number(argv[0])->integer == dcast_ex_Number(argv[1])->integer));
     }
 
    GCPtr lt(unsigned int argc, const GCPtr argv[]) {
@@ -69,7 +69,7 @@
            throw_jump();
        }
 
-       return ucast(alloc_Bool(dcast_ex<Number>(argv[0])->integer < dcast_ex<Number>(argv[1])->integer));
+       return ucast(alloc_Bool(dcast_ex_Number(argv[0])->integer < dcast_ex_Number(argv[1])->integer));
     }
 
    GCPtr print(unsigned int argc, const GCPtr argv[]) {
@@ -87,7 +87,7 @@
            sprintf(ex_buf, "invalid_aplication:car %d", argc);
            throw_jump();
        }
-       return ucast(dcast_ex<Pair>(argv[0])->car);
+       return ucast(dcast_ex_Pair(argv[0])->car);
     }
 
    GCPtr cdr(unsigned int argc, const GCPtr argv[]) {
@@ -95,7 +95,7 @@
            sprintf(ex_buf, "invalid_aplication:cdr %d", argc);
            throw_jump();
        }
-       return ucast(dcast_ex<Pair>(argv[0])->cdr);
+       return ucast(dcast_ex_Pair(argv[0])->cdr);
     }
 
    GCPtr cons(unsigned int argc, const GCPtr argv[]) {
@@ -111,5 +111,5 @@ GCPtr null_is(unsigned int argc, const GCPtr argv[]) {
         sprintf(ex_buf, "invalid_aplication:null? %d", argc);
         throw_jump();
     }
-    return ucast(alloc_Bool(dcast<Empty>(argv[0])));
+    return ucast(alloc_Bool(dcast_Empty(argv[0])));
 }

@@ -11,15 +11,15 @@ char *show(const GCPtr val)
         
     buf[0] = 0;
 
-    if(dcast_const<Empty>(val))
+    if(dcast_const_Empty(val))
         sprintf(buf, "()");
-    if(auto b =dcast_const<Bool>(val))
+    if(auto b =dcast_const_Bool(val))
         sprintf(buf, b->value ? "#t" : "#f");
-    if(auto num =dcast_const<Number>(val))
+    if(auto num =dcast_const_Number(val))
         sprintf(buf, "%d", num->integer);
-    if(auto symbol =dcast_const<Symbol>(val))
+    if(auto symbol =dcast_const_Symbol(val))
         sprintf(buf, "%s", extern_symbol(symbol->id));
-    if(auto p =dcast_const<Pair>(val)) {
+    if(auto p =dcast_const_Pair(val)) {
         const Pair *next=p;
 
         strcat(buf, "(");
@@ -36,7 +36,7 @@ char *show(const GCPtr val)
             strcat(buf, str);
             free(str);
                 
-            if(!dcast_const<Pair>(next->cdr))
+            if(!dcast_const_Pair(next->cdr))
                 break;
 
             next = (Pair*)(next->cdr);
@@ -44,16 +44,16 @@ char *show(const GCPtr val)
 
         strcat(buf, ")");
             
-        if(!dcast_const<Empty>(next->cdr)) {
+        if(!dcast_const_Empty(next->cdr)) {
             free(buf);
             sprintf(ex_buf, "improper list");
             throw_jump();
         }
     }
-    if(auto proc =dcast_const<Procedure>(val)) {
+    if(auto proc =dcast_const_Procedure(val)) {
         sprintf(buf ,"<Procedure 0x%lx >", (unsigned long)proc->func);
     }
-    if(auto lambdaproc =dcast_const<LambdaProcedure>(val)) {
+    if(auto lambdaproc =dcast_const_LambdaProcedure(val)) {
         strcat(buf, "<Lambda Procedure (lambda (");
         for(int i=0; i< lambdaproc->argc; i++) {
             strcat(buf, extern_symbol(lambdaproc->argv[i]));
@@ -66,9 +66,9 @@ char *show(const GCPtr val)
         free(str);
         strcat(buf,")>");
     }
-    if(dcast_const<Environment>(val))
+    if(dcast_const_Environment(val))
         sprintf(buf, "environment");
-    if(dcast_const<EnvironmentMap>(val))
+    if(dcast_const_EnvironmentMap(val))
         sprintf(buf, "environmentmap");
 
     return buf;

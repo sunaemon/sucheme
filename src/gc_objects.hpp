@@ -189,13 +189,6 @@ inline void init_LambdaProcedure(LambdaProcedure *i, GCPtr body, Environment *e)
     i->environment = e;
 }
 
-template<typename T0> T0* dcast(GCPtr)
-{
-    sprintf(ex_buf, "not_implemented");
-    throw_jump();
-    //return dynamic_cast<T0*>(a);
-}
-
 #define define_for_all(f)                       \
     f(EnvironmentMap)                           \
     f(Environment)                              \
@@ -208,7 +201,7 @@ template<typename T0> T0* dcast(GCPtr)
         f(LambdaProcedure)
 
 #define dcast_spec(T0)                          \
-    template<> inline T0* dcast<T0>(GCPtr a)    \
+    inline T0* dcast_##T0(GCPtr a)               \
     {                                           \
         if(TAG_##T0 == a->tag)                  \
             return (T0*)a;                      \
@@ -218,14 +211,8 @@ template<typename T0> T0* dcast(GCPtr)
 
 define_for_all(dcast_spec)
 
-template<typename T0> const T0* dcast_const(const GCPtr)
-{
-    sprintf(ex_buf, "not_implemented");
-    throw_jump();
-}
-
 #define dcast_const_spec(T0)                                    \
-    template<> inline const T0* dcast_const<T0>(const GCPtr a)  \
+    inline const T0* dcast_const_##T0(const GCPtr a)            \
     {                                                           \
         if(TAG_##T0 == a->tag)                                  \
             return (T0*)a;                                      \
@@ -235,16 +222,10 @@ template<typename T0> const T0* dcast_const(const GCPtr)
 
 define_for_all(dcast_const_spec)
 
-template<typename T0> inline T0 *dcast_ex(GCPtr)
-{
-    sprintf(ex_buf, "not_implemented");
-    throw_jump();
-}
-
 #define dcast_ex_spec(T0)                                               \
-    template<> inline T0* dcast_ex<T0>(GCPtr a)                         \
+    inline T0* dcast_ex_##T0(GCPtr a)                                   \
     {                                                                   \
-        auto ret = dcast<T0>(a);                                        \
+        auto ret = dcast_##T0(a);                                       \
         if(ret)                                                         \
             return ret;                                                 \
         else {                                                          \
@@ -259,4 +240,5 @@ define_for_all(dcast_ex_spec)
 
 //#define ucast(a) ((GCPtr)(a))
 #define ucast(a) (reinterpret_cast<GCPtr>(a))
+
 
