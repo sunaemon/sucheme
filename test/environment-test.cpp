@@ -11,7 +11,7 @@ using namespace std;
 
 TEST(Environment_test, test1)
 {
-    auto e = alloc<Environment>(nullptr);
+    auto e = alloc_Environment(nullptr);
     env_intern_define(e, "d", parse("1"));
     env_intern_define(e, "d", parse("2"));
     env_intern_define(e, "f", parse("3"));

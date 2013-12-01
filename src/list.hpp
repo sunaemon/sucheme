@@ -44,11 +44,11 @@ inline unsigned int ListToArray(GCPtr a[],Pair *list) {
 
 inline Pair* cons(GCPtr a, GCPtr l)
 {
-    return alloc<Pair>(a, l);
+    return alloc_Pair(a, l);
 }
 
 inline GCPtr make_list() {
-    return ucast(alloc<Empty>());
+    return ucast(alloc_Empty());
 }
 
 template<class... Rest>
@@ -59,10 +59,10 @@ GCPtr make_list(GCPtr val, Rest... rest)
 
 inline Empty *nil()
 {
-    return alloc<Empty>();
+    return alloc_Empty();
 }
 
 inline Symbol *make_symbol(const char *name)
 {
-    return alloc<Symbol>(name);
+    return alloc_Symbol(intern_symbol(name));
 }

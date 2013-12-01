@@ -33,14 +33,14 @@ void env_map_add(EnvironmentMap *a, int id, GCPtr val)
             if(next->l)
                 next=next->l;
             else {
-                next->l = alloc<EnvironmentMap>(id,val);
+                next->l = alloc_EnvironmentMap(id,val);
                 return;
             }
         } else if(id > next->id) {
             if(next->g)
                 next=next->g;
             else {
-                next->g = alloc<EnvironmentMap>(id,val);
+                next->g = alloc_EnvironmentMap(id,val);
                 return;
             }
         } else if(id == next->id){
@@ -56,7 +56,7 @@ void env_define(Environment *e, int id, GCPtr value) {
     if(e->env_map)
         env_map_add(e->env_map, id, value); // copy
     else {
-        e->env_map = alloc<EnvironmentMap>(id,value);
+        e->env_map = alloc_EnvironmentMap(id,value);
     }
 }
 
@@ -75,7 +75,7 @@ void env_set(Environment *e, int id, GCPtr value) {
                     
         }
     } else {
-        e->env_map = alloc<EnvironmentMap>(id,value);
+        e->env_map = alloc_EnvironmentMap(id,value);
     }            
 }
 

@@ -16,8 +16,8 @@ using std::string;
 
 /*TEST(GC, Test1)
 {
-    int *i = alloc<int>();
-    int *j = alloc<int>();
+    int *i = alloc_int();
+    int *j = alloc_int();
     *i = 0;
     *j = 0;
     EXPECT_EQ(0, *i);
@@ -46,8 +46,8 @@ TEST(GC, Test2)
     Environment *nullenv = nullptr;
     run_gc(nullenv);
 
-    auto e = alloc<Environment>(nullptr);
-    env_intern_define(e, "car", ucast(alloc<Procedure>(car)));
+    auto e = alloc_Environment(nullptr);
+    env_intern_define(e, "car", ucast(alloc_Procedure(car)));
 
     eval(parse("(define caar (lambda (x) (car (car x))))"),e);
 

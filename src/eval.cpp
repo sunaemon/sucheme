@@ -36,7 +36,7 @@ GCPtr eval(GCPtr a, Environment *e) {
             }
 
             auto body = args[1];
-            LambdaProcedure *l = alloc<LambdaProcedure>(body, e);
+            LambdaProcedure *l = alloc_LambdaProcedure(body, e);
             int i=0;
             ListForeach(dcast_ex<Pair>(args[0]),
                         [&](GCPtr v){
@@ -120,7 +120,7 @@ GCPtr eval(GCPtr a, Environment *e) {
                 for(unsigned int i=0; i<argc; i++)
                     eval_args[i] = eval(args[i], e);
 
-                auto e_lambda = alloc<Environment>(e);
+                auto e_lambda = alloc_Environment(e);
 
                 if(argc != (unsigned int)lambda->argc) {
                     sprintf(ex_buf, "not_implemented: wrong number of args");

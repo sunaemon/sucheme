@@ -8,15 +8,15 @@
 
     void init_environment(Environment *e)
     {
-        env_intern_define(e, "+", ucast(alloc<Procedure>(add)));
-        env_intern_define(e, "=", ucast(alloc<Procedure>(eq)));
-        env_intern_define(e, "*", ucast(alloc<Procedure>(mul)));
-        env_intern_define(e, "-", ucast(alloc<Procedure>(sub)));
-        env_intern_define(e, "car", ucast(alloc<Procedure>(car)));
-        env_intern_define(e, "cdr", ucast(alloc<Procedure>(cdr)));
-        env_intern_define(e, "print", ucast(alloc<Procedure>(print)));
-        env_intern_define(e, "null?", ucast(alloc<Procedure>(null_is)));
-        env_intern_define(e, "else", ucast(alloc<Bool>(true)));
+        env_intern_define(e, "+", ucast(alloc_Procedure(add)));
+        env_intern_define(e, "=", ucast(alloc_Procedure(eq)));
+        env_intern_define(e, "*", ucast(alloc_Procedure(mul)));
+        env_intern_define(e, "-", ucast(alloc_Procedure(sub)));
+        env_intern_define(e, "car", ucast(alloc_Procedure(car)));
+        env_intern_define(e, "cdr", ucast(alloc_Procedure(cdr)));
+        env_intern_define(e, "print", ucast(alloc_Procedure(print)));
+        env_intern_define(e, "null?", ucast(alloc_Procedure(null_is)));
+        env_intern_define(e, "else", ucast(alloc_Bool(true)));
         
         eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
         eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);
@@ -29,7 +29,7 @@
         for(unsigned int i=0; i<argc; i++)
             ret += dcast_ex<Number>(argv[i])->integer;
 
-        return ucast(alloc<Number>(ret));
+        return ucast(alloc_Number(ret));
     }
 
    GCPtr mul(unsigned int argc, const GCPtr argv[]) {
@@ -37,7 +37,7 @@
         for(unsigned int i=0; i<argc; i++)
             ret *= dcast_ex<Number>(argv[i])->integer;
 
-        return ucast(alloc<Number>(ret));
+        return ucast(alloc_Number(ret));
     }
 
    GCPtr sub(unsigned int argc, const GCPtr argv[]) {
@@ -51,7 +51,7 @@
        for(unsigned int i=1; i<argc; i++)
            ret -= dcast_ex<Number>(argv[i])->integer;
        
-       return ucast(alloc<Number>(ret));
+       return ucast(alloc_Number(ret));
    }
 
    GCPtr eq(unsigned int argc, const GCPtr argv[]) {
@@ -60,7 +60,7 @@
            throw_jump();
        }
 
-       return ucast(alloc<Bool>(dcast_ex<Number>(argv[0])->integer == dcast_ex<Number>(argv[1])->integer));
+       return ucast(alloc_Bool(dcast_ex<Number>(argv[0])->integer == dcast_ex<Number>(argv[1])->integer));
     }
 
    GCPtr lt(unsigned int argc, const GCPtr argv[]) {
@@ -69,7 +69,7 @@
            throw_jump();
        }
 
-       return ucast(alloc<Bool>(dcast_ex<Number>(argv[0])->integer < dcast_ex<Number>(argv[1])->integer));
+       return ucast(alloc_Bool(dcast_ex<Number>(argv[0])->integer < dcast_ex<Number>(argv[1])->integer));
     }
 
    GCPtr print(unsigned int argc, const GCPtr argv[]) {
@@ -79,7 +79,7 @@
            free(buf);
        }
        printf("\n");
-       return ucast(alloc<Empty>());
+       return ucast(alloc_Empty());
     }
 
    GCPtr car(unsigned int argc, const GCPtr argv[]) {
@@ -111,5 +111,5 @@ GCPtr null_is(unsigned int argc, const GCPtr argv[]) {
         sprintf(ex_buf, "invalid_aplication:null? %d", argc);
         throw_jump();
     }
-    return ucast(alloc<Bool>(dcast<Empty>(argv[0])));
+    return ucast(alloc_Bool(dcast<Empty>(argv[0])));
 }

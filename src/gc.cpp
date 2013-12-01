@@ -55,30 +55,34 @@ GCPtr copy(GCPtr val) {
         return val->whereis;
 
     if(auto b = dcast<Bool>(val)) {
-        return val->whereis = ucast(alloc<Bool>(*b));
+        return val->whereis = ucast(alloc_Bool(b->value));
     } else if(auto n = dcast<Number>(val))
-        return val->whereis = ucast(alloc<Number>(*n));
+        return val->whereis = ucast(alloc_Number(n->integer));
     else if(auto s = dcast<Symbol>(val))
-        return val->whereis = ucast(alloc<Symbol>(*s));
+        return val->whereis = ucast(alloc_Symbol(s->id));
     else if(auto p = dcast<Pair>(val))
-        return val->whereis = ucast(alloc<Pair>(*p));
-    else if(auto em = dcast<Empty>(val))
-        return val->whereis = ucast(alloc<Empty>(*em));
+        return val->whereis = ucast(alloc_Pair(p->car, p->cdr));
+    else if(dcast<Empty>(val))
+        return val->whereis = ucast(alloc_Empty());
     else if(auto pc = dcast<Procedure>(val))
-        return val->whereis = ucast(alloc<Procedure>(*pc));
+        return val->whereis = ucast(alloc_Procedure(pc->func));
     else if(auto lp = dcast<LambdaProcedure>(val))
-        return val->whereis = ucast(alloc<LambdaProcedure>(*lp));
-    else if(auto e = dcast<Environment>(val))
-        return val->whereis = ucast(alloc<Environment>(*e));
-    else if(auto a = dcast<EnvironmentMap>(val))
-        return val->whereis = ucast(alloc<EnvironmentMap>(*a));
-    else {
+        return val->whereis = ucast(alloc_LambdaProcedure(lp->body, lp->environment));
+    else if(auto e = dcast<Environment>(val)) {
+        Environment *new_e =alloc_Environment(e->parent);
+        new_e->env_map = e->env_map;
+        return val->whereis = ucast(new_e);
+    }
+    else if(auto a = dcast<EnvironmentMap>(val)) {
+        EnvironmentMap *new_a = alloc_EnvironmentMap(a->id, a->val);
+        new_a->g = a->g;
+        new_a->l = a->l;
+        return val->whereis = ucast(new_a);
+    } else {
         sprintf(ex_buf, "not_implemented");
         longjmp(ex_jbuf,0);
     }
 }
-            
-
 
 unsigned long allocated_memory()
 {

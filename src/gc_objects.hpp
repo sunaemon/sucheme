@@ -25,6 +25,12 @@ struct GCObject
     GCObject(char tag) : tag(tag), whereis(nullptr) {}
 };
 
+inline void init_GCObject(GCObject *i, char tag)
+{
+    i->tag = tag;
+    i->whereis = nullptr;
+}
+
 typedef GCObject *GCPtr;
 
 struct EnvironmentMap
@@ -40,6 +46,15 @@ struct EnvironmentMap
         : obj(TAG_EnvironmentMap), g(nullptr), l(nullptr), id(id), val(val) {}
 };
 
+inline void init_EnvironmentMap(EnvironmentMap *i, int id, GCPtr val)
+{
+    i->obj.tag = TAG_EnvironmentMap;
+    i->g = nullptr;
+    i->l = nullptr;
+    i->id = id;
+    i->val = val;
+}
+
 struct Environment
 {
     GCObject obj;
@@ -52,6 +67,13 @@ struct Environment
     : obj(TAG_Environment), parent(parent), env_map(nullptr) {}
 };
 
+inline void init_Environment(Environment *i, Environment *parent)
+{
+    i->obj.tag = TAG_Environment;
+    i->parent = parent;
+    i->env_map = nullptr;
+}
+
 struct Number
 {
     GCObject obj;
@@ -60,6 +82,12 @@ struct Number
     Number(int integer) : obj(TAG_Number), integer(integer) {}
 };
 
+inline void init_Number(Number *i, int integer)
+{
+    i->obj.tag = TAG_Number;
+    i->integer = integer;
+}
+    
 struct Bool
 {
     GCObject obj;
@@ -67,6 +95,12 @@ struct Bool
 
     Bool(bool value) : obj(TAG_Bool), value(value) {}
 };
+
+inline void init_Bool(Bool *i, bool value)
+{
+    i->obj.tag = TAG_Bool;
+    i->value = value;
+}
 
 struct Symbol
 {
@@ -77,16 +111,28 @@ struct Symbol
     Symbol(int id) : obj(TAG_Symbol), id(id) {}
 };
 
+inline void init_Symbol(Symbol *i, int id)
+{
+    i->obj.tag = TAG_Symbol;
+    i->id = id;
+}
+
 struct Empty
 {
     GCObject obj;
     Empty() : obj(TAG_Empty) {}
 };
 
+inline void init_Empty(Empty *i)
+{
+    i->obj.tag = TAG_Empty;
+}
+
+typedef GCPtr (*subr)(unsigned int argc, const GCPtr argv[]);
+
 struct Procedure
 {
     GCObject obj;
-    using subr = GCPtr (*)(unsigned int argc, const GCPtr argv[]);
 
     subr func;
         
@@ -97,6 +143,12 @@ struct Procedure
     Procedure(const subr &func) : obj(TAG_Procedure), func(func) {}
 };
 
+inline void init_Procedure(Procedure *i, const subr func)
+{
+    i->obj.tag = TAG_Procedure;
+    i->func = func;
+}
+
 struct Pair
 {
     GCObject obj;
@@ -106,6 +158,14 @@ struct Pair
     Pair(GCPtr car, GCPtr cdr) : obj(TAG_Pair), car(car), cdr(cdr) {}
     Pair(): obj(TAG_Pair), car(nullptr), cdr(nullptr) {}
 };
+
+inline void init_Pair(Pair *i, GCPtr car, GCPtr cdr)
+{
+    i->obj.tag = TAG_Pair;
+    i->car = car;
+    i->cdr = cdr;
+}
+
 
 #define LAMBDA_MAX_ARG 10
 
@@ -121,6 +181,13 @@ struct LambdaProcedure
                     Environment *environment) :
         obj(TAG_LambdaProcedure), body(body), environment(environment) {}
 };
+
+inline void init_LambdaProcedure(LambdaProcedure *i, GCPtr body, Environment *e)
+{
+    i->obj.tag = TAG_LambdaProcedure;
+    i->body = body;
+    i->environment = e;
+}
 
 template<typename T0> T0* dcast(GCPtr)
 {

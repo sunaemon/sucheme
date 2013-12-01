@@ -5,7 +5,7 @@
 #include "gc_objects.hpp"
 #include <string.h>
 #include <stdint.h>
-
+#include "list.hpp"
 
 parse_int_result parse_int(const char *s, int p) {
     int64_t ret=0;
@@ -30,7 +30,7 @@ parse_result PExpr(const char *s, int32_t p)
         if(s[p] == 't') {
             p++;
             if(delimiter(s[p]))
-                return make_parse_result(ucast(alloc<Bool>(true)), p);
+                return make_parse_result(ucast(alloc_Bool(true)), p);
             else {
                 sprintf(ex_buf, "unsupported_grammer");
                 longjmp(ex_jbuf,0);
@@ -38,7 +38,7 @@ parse_result PExpr(const char *s, int32_t p)
         } else if(s[p] == 'f') {
             p++;
             if(delimiter(s[p]))
-                return make_parse_result(ucast(alloc<Bool>(false)), p);
+                return make_parse_result(ucast(alloc_Bool(false)), p);
             else {
                 sprintf(ex_buf, "unsupported_grammer");
                 longjmp(ex_jbuf,0);
@@ -50,10 +50,10 @@ parse_result PExpr(const char *s, int32_t p)
     }else if(s[p] == '-' || s[p] == '+') {
         if(delimiter(s[p+1])) {
             if(s[p] == '+') {
-                return make_parse_result(ucast(alloc<Symbol>("+")), p+1);
+                return make_parse_result(ucast(make_symbol("+")), p+1);
             }
             else if(s[p] == '-')
-                return make_parse_result(ucast(alloc<Symbol>("-")), p+1);
+                return make_parse_result(ucast(make_symbol("-")), p+1);
         }
 
         int64_t ret=0;
@@ -71,7 +71,7 @@ parse_result PExpr(const char *s, int32_t p)
         ret = res.val;
         p = res.pos;
         if(delimiter(s[p]))
-            return make_parse_result(ucast(alloc<Number>(sig?ret:-ret)), p);
+            return make_parse_result(ucast(alloc_Number(sig?ret:-ret)), p);
         else {
             sprintf(ex_buf, "unsupported_grammer");
             longjmp(ex_jbuf,0);
@@ -84,7 +84,7 @@ parse_result PExpr(const char *s, int32_t p)
         ret = res.val;
         p = res.pos;
         if(delimiter(s[p]))
-            return make_parse_result(ucast(alloc<Number>(ret)), p);
+            return make_parse_result(ucast(alloc_Number(ret)), p);
         else {
             sprintf(ex_buf, "unsupported_grammer");
             longjmp(ex_jbuf,0);
@@ -94,9 +94,9 @@ parse_result PExpr(const char *s, int32_t p)
     if(s[p] == '(') {
         p++;
         if(s[p] == ')')
-            return make_parse_result(ucast(alloc<Empty>()), p+1);
+            return make_parse_result(ucast(alloc_Empty()), p+1);
 
-        auto list = alloc<Pair>();
+        auto list = alloc_Pair(nullptr, nullptr);
         Pair *next(list);
 
         while(white_space(s[p])) p++;
@@ -114,7 +114,7 @@ parse_result PExpr(const char *s, int32_t p)
 
             auto ret = PExpr(s, p);
 
-            next->cdr = ucast(alloc<Pair>());
+            next->cdr = ucast(alloc_Pair(nullptr, nullptr));
 
             next = (Pair*)(next->cdr);
 
@@ -124,7 +124,7 @@ parse_result PExpr(const char *s, int32_t p)
 
             while(white_space(s[p])) p++;
         }
-        next->cdr = ucast(alloc<Empty>());
+        next->cdr = ucast(alloc_Empty());
         
         return make_parse_result(ucast(list), p+1);
     }
@@ -136,7 +136,7 @@ parse_result PExpr(const char *s, int32_t p)
             char buf[256];
             memcpy(buf, s+start, p-start);
             buf[p-start] = 0;
-            return make_parse_result(ucast(alloc<Symbol>(buf)), p);
+            return make_parse_result(ucast(make_symbol(buf)), p);
         } else {
             sprintf(ex_buf, "unsupported_grammer");
             longjmp(ex_jbuf,0);

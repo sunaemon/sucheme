@@ -19,7 +19,7 @@ using namespace std;
 class EvalTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
-        e = alloc<Environment>(nullptr);
+        e = alloc_Environment(nullptr);
         init_environment(e);
     }
 public:
