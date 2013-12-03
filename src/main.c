@@ -5,7 +5,7 @@
 #include "functions.h"
 #include "gc.h"
 
-int main(int argc, char**argv)
+int main()
 {
     char *command;
 
@@ -27,7 +27,7 @@ int main(int argc, char**argv)
         } else {
             fprintf(stderr, "%s\n", ex_buf);
         }
-        run_gc(e);
+        run_gc(&e);
 
         free(command);
     }

@@ -3,8 +3,8 @@
 #include <wchar.h>
 #include <stdbool.h>
 #include "exceptions.h"
-#include "generic_functions.h"
 #include "macro.h"
+#include "gc_objects.h"
 
 IF_CPP(extern "C" {)
 

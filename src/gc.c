@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "gc.h"
 #include "exceptions.h"
-#include "generic_functions.h"
 #include "environment.h"
 #include "show.h"
 
@@ -57,7 +56,7 @@ GCPtr copy(GCPtr val) {
 
     if(!have_to_copy(val))
         return val;
-
+    
     //cerr << "whereis:" << memory_location(val->whereis) << " " << memory_location(val) << endl;
 
     if(val->whereis != val)
@@ -107,8 +106,10 @@ void run_gc(Environment **e)
     //unsigned long beforesize = unscaned - mem[memory_in_used];
     memory_in_used = 1-memory_in_used;
     scaned = unscaned = mem[memory_in_used];
-        
-    if(!e) {
+    
+    //fprintf(stderr, "rungc called\n");
+    
+    if(!*e) {
         //fprintf(stderr, "run_gc called. memory usage: %ld -> 0\n", beforesize);
         return;
     }
@@ -116,11 +117,12 @@ void run_gc(Environment **e)
     *e = (Environment*)copy(ucast(*e));
         
     while(scaned < unscaned) {
-        //cerr << scaned - mem[0] << endl;
-        //cerr << unscaned - mem[0] << endl;
+        //fprintf(stderr, "%d\n", scaned - mem[0]);
+        //fprintf(stderr, "%d\n", unscaned - mem[0]);
             
         GCPtr val = ucast(scaned);
 
+        //fprintf(stderr, "\n%d\n", rpos_active_mem(val));
         //cerr << endl << rpos_active_mem(val)  << endl << showptr(val);
         Pair *p;
         Environment *e;
@@ -162,7 +164,7 @@ void run_gc(Environment **e)
             sprintf(ex_buf, "not_implemented");
             longjmp(ex_jbuf,0);
         }
-        //cerr << "end " << rpos_active_mem(val) << endl;
+        //fprintf(stderr, "end %d\n", rpos_active_mem(val));
     }
 
     //unsigned long aftersize = unscaned - mem[memory_in_used];

@@ -2,7 +2,6 @@
 #include "exceptions.h"
 #include "gc.h"
 #include "gc_objects.h"
-#include "generic_functions.h"
 
 /*template<typename T>
 inline void ListForeach(Pair *list, T callback) {

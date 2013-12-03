@@ -3,7 +3,6 @@
 #include "environment.h"
 #include "show.h"
 #include "exceptions.h"
-#include "generic_functions.h"
 #include "intern.h"
 #include "gc_objects.h"
 
