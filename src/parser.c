@@ -1,11 +1,11 @@
-#include "parser.hpp"
-#include "exceptions.hpp"
+#include "parser.h"
+#include "exceptions.h"
 #include <stdio.h>
-#include "gc.hpp"
-#include "gc_objects.hpp"
+#include "gc.h"
+#include "gc_objects.h"
 #include <string.h>
 #include <stdint.h>
-#include "list.hpp"
+#include "list.h"
 
 parse_int_result parse_int(const char *s, int p) {
     int64_t ret=0;
@@ -13,12 +13,14 @@ parse_int_result parse_int(const char *s, int p) {
     while(digit(s[p])) {
         ret = ret*10 + (s[p++] - '0');
     }
-    return {ret, p};
+    parse_int_result res = {ret, p};
+    return res;
 }
 
 inline parse_result make_parse_result(GCPtr val, int pos)
 {
-    return {val, pos};
+    parse_result res = {val,pos};
+    return res;
 }
 
 parse_result PExpr(const char *s, int32_t p)
@@ -96,13 +98,13 @@ parse_result PExpr(const char *s, int32_t p)
         if(s[p] == ')')
             return make_parse_result(ucast(alloc_Empty()), p+1);
 
-        auto list = alloc_Pair(nullptr, nullptr);
-        Pair *next(list);
+        Pair *list = alloc_Pair(NULL, NULL);
+        Pair *next=list;
 
         while(white_space(s[p])) p++;
 
-        auto ret = PExpr(s, p);
-        auto a = ret.val;
+        parse_result ret = PExpr(s, p);
+        GCPtr a = ret.val;
         
         list->car = a;
         p = ret.pos;
@@ -112,9 +114,9 @@ parse_result PExpr(const char *s, int32_t p)
         while(s[p] != ')') {
             while(white_space(s[p])) p++;
 
-            auto ret = PExpr(s, p);
+            parse_result ret = PExpr(s, p);
 
-            next->cdr = ucast(alloc_Pair(nullptr, nullptr));
+            next->cdr = ucast(alloc_Pair(NULL, NULL));
 
             next = (Pair*)(next->cdr);
 
@@ -151,7 +153,7 @@ parse_result PExpr(const char *s, int32_t p)
     }
 }
 
-GCPtr parse(const char *s, unsigned int length) {
+GCPtr parse_len(const char *s, unsigned int length) {
     parse_result ret = PExpr(s,0);
     if(! (ret.pos > 0 && length == (unsigned int)ret.pos)) {
         fprintf(stderr, "input:%d\n parsed:%d", length, ret.pos);
@@ -160,5 +162,5 @@ GCPtr parse(const char *s, unsigned int length) {
 }
 
 GCPtr parse(const char *s) {
-    return parse(s, strlen(s));
+    return parse_len(s, strlen(s));
 }

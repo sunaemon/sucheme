@@ -1,5 +1,5 @@
 #pragma once
-#include "exceptions.hpp"
-#include "show.hpp"
+#include "exceptions.h"
+#include "show.h"
 #define dump(x) (std::cerr << #x" : " << x << std::endl)
 

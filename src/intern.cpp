@@ -1,14 +1,18 @@
-#include "intern.hpp"
+#include "intern.h"
 #include <string>
 #include <map>
-#include "exceptions.hpp"
+#include "exceptions.h"
 #include <stdio.h>
+#include "environment.h"
 
 using std::string;
 using std::map;
 
 static map<string, int> symbol_map { {"lambda", ID_LAMBDA}, {"cond",ID_COND}, {"quote", ID_QUOTE}, {"define", ID_DEFINE}, {"define-macro", ID_DEFINE_MACRO}, {"set!",ID_SET}, {"begin", ID_BEGIN},{"else", ID_ELSE} };
+
 static int next_id = REGISTERED_ID_COUNT;
+extern "C" {
+
 
 int intern_symbol(const char *name)
 {
@@ -33,4 +37,6 @@ const char *extern_symbol(int id)
         }
     sprintf(ex_buf, "not_interned_id:%d", id);
     longjmp(ex_jbuf,0);
+}
+
 }

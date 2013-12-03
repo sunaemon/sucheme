@@ -1,8 +1,11 @@
 #pragma once
-#include "intern.hpp"
-#include "exceptions.hpp"
-#include "show.hpp"
+#include "intern.h"
+#include "exceptions.h"
 #include <stdlib.h>
+#include "macro.h"
+#include <stdbool.h>
+
+IF_CPP(extern "C" {)
 
 enum GCObject_tag{
     TAG_Null,
@@ -18,69 +21,65 @@ enum GCObject_tag{
     TAG_LambdaProcedure,
 };
 
-struct GCObject
+struct GCObject_
 {
     char tag;
-    GCObject *whereis;
-    GCObject(char tag) : tag(tag), whereis(nullptr) {}
+    struct GCObject_ *whereis;
 };
+
+typedef struct GCObject_ GCObject;
 
 inline void init_GCObject(GCObject *i, char tag)
 {
     i->tag = tag;
-    i->whereis = nullptr;
+    i->whereis = NULL;
 }
 
 typedef GCObject *GCPtr;
 
-struct EnvironmentMap
+struct  EnvironmentMap_
 {
     GCObject obj;
 
-    EnvironmentMap *g;
-    EnvironmentMap *l;
+    struct EnvironmentMap_ *g;
+    struct EnvironmentMap_ *l;
         
     int id;
     GCPtr val;
-    EnvironmentMap(int id, GCPtr val)
-        : obj(TAG_EnvironmentMap), g(nullptr), l(nullptr), id(id), val(val) {}
 };
+
+typedef struct EnvironmentMap_ EnvironmentMap;
 
 inline void init_EnvironmentMap(EnvironmentMap *i, int id, GCPtr val)
 {
     i->obj.tag = TAG_EnvironmentMap;
-    i->g = nullptr;
-    i->l = nullptr;
+    i->g = NULL;
+    i->l = NULL;
     i->id = id;
     i->val = val;
 }
 
-struct Environment
+typedef struct Environment_
 {
     GCObject obj;
 
-    Environment *parent;
+    struct Environment_ *parent;
 
     EnvironmentMap *env_map;
-
-    Environment(Environment *parent)
-    : obj(TAG_Environment), parent(parent), env_map(nullptr) {}
-};
+}Environment;
 
 inline void init_Environment(Environment *i, Environment *parent)
 {
     i->obj.tag = TAG_Environment;
     i->parent = parent;
-    i->env_map = nullptr;
+    i->env_map = NULL;
 }
 
-struct Number
+typedef struct
 {
     GCObject obj;
     int integer;
-
-    Number(int integer) : obj(TAG_Number), integer(integer) {}
-};
+}Number;
 
 inline void init_Number(Number *i, int integer)
 {
@@ -88,13 +87,11 @@ inline void init_Number(Number *i, int integer)
     i->integer = integer;
 }
     
-struct Bool
+typedef struct
 {
     GCObject obj;
     bool value;
-
-    Bool(bool value) : obj(TAG_Bool), value(value) {}
-};
+}Bool;
 
 inline void init_Bool(Bool *i, bool value)
 {
@@ -102,14 +99,11 @@ inline void init_Bool(Bool *i, bool value)
     i->value = value;
 }
 
-struct Symbol
+typedef struct
 {
     GCObject obj;
     int id;
-
-    Symbol(const char *name) : obj(TAG_Symbol), id(intern_symbol(name)) {}
-    Symbol(int id) : obj(TAG_Symbol), id(id) {}
-};
+} Symbol;
 
 inline void init_Symbol(Symbol *i, int id)
 {
@@ -117,11 +111,10 @@ inline void init_Symbol(Symbol *i, int id)
     i->id = id;
 }
 
-struct Empty
+typedef struct
 {
     GCObject obj;
-    Empty() : obj(TAG_Empty) {}
-};
+}Empty;
 
 inline void init_Empty(Empty *i)
 {
@@ -130,18 +123,12 @@ inline void init_Empty(Empty *i)
 
 typedef GCPtr (*subr)(unsigned int argc, const GCPtr argv[]);
 
-struct Procedure
+typedef struct
 {
     GCObject obj;
 
     subr func;
-        
-    GCPtr call(unsigned int argc, const GCPtr argv[]) {
-        return func(argc, argv);
-    }
-
-    Procedure(const subr &func) : obj(TAG_Procedure), func(func) {}
-};
+}Procedure;
 
 inline void init_Procedure(Procedure *i, const subr func)
 {
@@ -149,15 +136,12 @@ inline void init_Procedure(Procedure *i, const subr func)
     i->func = func;
 }
 
-struct Pair
+typedef struct
 {
     GCObject obj;
     GCPtr car;
     GCPtr cdr;
-
-    Pair(GCPtr car, GCPtr cdr) : obj(TAG_Pair), car(car), cdr(cdr) {}
-    Pair(): obj(TAG_Pair), car(nullptr), cdr(nullptr) {}
-};
+}Pair;
 
 inline void init_Pair(Pair *i, GCPtr car, GCPtr cdr)
 {
@@ -169,18 +153,14 @@ inline void init_Pair(Pair *i, GCPtr car, GCPtr cdr)
 
 #define LAMBDA_MAX_ARG 10
 
-struct LambdaProcedure
+typedef struct
 {
     GCObject obj;
     int argc;
     int argv[LAMBDA_MAX_ARG];
     GCPtr body;
     Environment *environment;
-        
-    LambdaProcedure(GCPtr body,
-                    Environment *environment) :
-        obj(TAG_LambdaProcedure), body(body), environment(environment) {}
-};
+}LambdaProcedure;
 
 inline void init_LambdaProcedure(LambdaProcedure *i, GCPtr body, Environment *e)
 {
@@ -206,7 +186,7 @@ inline void init_LambdaProcedure(LambdaProcedure *i, GCPtr body, Environment *e)
         if(TAG_##T0 == a->tag)                  \
             return (T0*)a;                      \
         else                                    \
-            return nullptr;                     \
+            return NULL;                     \
     }
 
 define_for_all(dcast_spec)
@@ -217,15 +197,18 @@ define_for_all(dcast_spec)
         if(TAG_##T0 == a->tag)                                  \
             return (T0*)a;                                      \
         else                                                    \
-            return nullptr;                                     \
+            return NULL;                                     \
     }
 
 define_for_all(dcast_const_spec)
 
+//show.c
+char *show(const GCPtr val);
+
 #define dcast_ex_spec(T0)                                               \
     inline T0* dcast_ex_##T0(GCPtr a)                                   \
     {                                                                   \
-        auto ret = dcast_##T0(a);                                       \
+        T0 *ret = dcast_##T0(a);                                       \
         if(ret)                                                         \
             return ret;                                                 \
         else {                                                          \
@@ -238,7 +221,6 @@ define_for_all(dcast_const_spec)
 
 define_for_all(dcast_ex_spec)
 
-//#define ucast(a) ((GCPtr)(a))
-#define ucast(a) (reinterpret_cast<GCPtr>(a))
+#define ucast(a) ((GCPtr)(a))
 
-
+IF_CPP(})

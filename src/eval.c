@@ -1,70 +1,91 @@
-#include "list.hpp"
-#include "parser.hpp"
-#include "environment.hpp"
-#include "show.hpp"
-#include "exceptions.hpp"
-#include "generic_functions.hpp"
-#include "intern.hpp"
-#include "gc_objects.hpp"
+#include "list.h"
+#include "parser.h"
+#include "environment.h"
+#include "show.h"
+#include "exceptions.h"
+#include "generic_functions.h"
+#include "intern.h"
+#include "gc_objects.h"
 
 GCPtr eval(GCPtr a, Environment *e) {
-    if(auto s = dcast_Symbol(a))
+    Symbol *s;
+    Number *n;
+    Bool *b;
+    Empty *empty;
+    Procedure *proc;
+    LambdaProcedure *lambdaproc;
+    Pair *p;
+    if((s = dcast_Symbol(a)))
         return env_lookup(e, s->id);
-    if(auto n = dcast_Number(a))
+    if((n = dcast_Number(a)))
         return ucast(n);
-    if(auto b = dcast_Bool(a))
+    if((b = dcast_Bool(a)))
         return ucast(b);
-    if(auto empty = dcast_Empty(a))
+    if((empty = dcast_Empty(a)))
         return ucast(empty);
-    if(auto proc = dcast_Procedure(a))
+    if((proc = dcast_Procedure(a)))
         return ucast(proc);
-    if(auto lambdaproc = dcast_LambdaProcedure(a))
+    if((lambdaproc = dcast_LambdaProcedure(a)))
         return ucast(lambdaproc);
-    if(auto p = dcast_Pair(a)) {
+    if((p = dcast_Pair(a))) {
         GCPtr args[LAMBDA_MAX_ARG];
         unsigned int argc = ListToArray(args, dcast_ex_Pair(p->cdr));
 
-        GCPtr ret = nullptr;
+        GCPtr ret = NULL;
         
-        //cerr << ">" << show(a) << endl << endl;
+        Symbol *f = dcast_Symbol(p->car);
 
-        auto f = dcast_Symbol(p->car);
         if(f && f->id == ID_LAMBDA) {
             if(argc != 2) {
                 sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", argc);
                 longjmp(ex_jbuf,0);
             }
 
-            auto body = args[1];
-            LambdaProcedure *l = alloc_LambdaProcedure(body, e);
+            GCPtr body = args[1];
+            LambdaProcedure *lp = alloc_LambdaProcedure(body, e);
             int i=0;
-            ListForeach(dcast_ex_Pair(args[0]),
-                        [&](GCPtr v){
-                            if(i<LAMBDA_MAX_ARG)
-                                l->argv[i++] = dcast_ex_Symbol(v)->id;
-                            else {
-                                sprintf(ex_buf, "too_many_argument");
-                                throw_jump();
-                            }
-                        });
-            l->argc = i;
-            ret = ucast(l);
+            {
+                Pair *l_ = dcast_ex_Pair(args[0]);
+                Pair *ll_;
+                
+                for(;;){
+                    if(i<LAMBDA_MAX_ARG)
+                        lp->argv[i++] = dcast_ex_Symbol(l_->car)->id;
+                    else {
+                        sprintf(ex_buf, "too_many_argument");
+                        throw_jump();
+                    }
+
+                    ll_ = dcast_Pair(l_->cdr);
+                    if(!ll_) break;
+                    l_ = ll_;
+                }
+                
+                if(!dcast_Empty(l_->cdr)) {
+                    sprintf(ex_buf, "improper_list");
+                    throw_jump();
+                }
+            }
+            lp->argc = i;
+            ret = ucast(lp);
         } else if(f && f->id == ID_COND) {
-            for(auto &i : args) {
+            for(unsigned int i=0; i<argc; i++) {
                 GCPtr values[LAMBDA_MAX_ARG];
-                unsigned int values_size = ListToArray(values, dcast_ex_Pair(i));
+                unsigned int values_size = ListToArray(values, dcast_ex_Pair(args[i]));
 
                 if(values_size != 2) {
                     sprintf(ex_buf, "malformed_cond");
                     throw_jump();
                 }
 
-                auto val = dcast_Symbol(values[0]);
+                Symbol *s_val = dcast_Symbol(values[0]);
 
-                if(val && val->id == ID_ELSE)
+                Bool *b_val;
+
+                if(s_val && s_val->id == ID_ELSE)
                     ret = eval(values[1], e);
-                else if(auto val = dcast_Bool(eval(values[0],e)))
-                    if(val->value) {
+                else if((b_val = dcast_Bool(eval(values[0],e))))
+                    if(b_val->value) {
                         ret = eval(values[1], e);
                         goto end;
                     }
@@ -84,7 +105,9 @@ GCPtr eval(GCPtr a, Environment *e) {
                 throw_jump();
             }
 
-            if(auto symbol = dcast_Symbol(args[0])) {
+            Symbol *symbol;
+
+            if((symbol = dcast_Symbol(args[0]))) {
                 env_define(e, symbol->id, eval(args[1],e));
                 ret = ucast(symbol);
             } else {
@@ -102,9 +125,10 @@ GCPtr eval(GCPtr a, Environment *e) {
             for(unsigned int i=0; i<argc; i++)
                 ret = eval(args[i], e);
         } else { // application is function call
-            auto callee = eval(p->car, e);
-            
-            if(auto func = dcast_Procedure(callee)) {
+            GCPtr callee = eval(p->car, e);
+            Procedure *func;
+            LambdaProcedure *lambda;
+            if((func = dcast_Procedure(callee))) {
                 GCPtr eval_args[LAMBDA_MAX_ARG];
 
                 int eval_argc=0;
@@ -113,14 +137,14 @@ GCPtr eval(GCPtr a, Environment *e) {
                     eval_args[eval_argc++] = eval(args[i], e);
                 }
 
-                ret = func->call(eval_argc, eval_args);
-            } else if(auto lambda = dcast_LambdaProcedure(callee)) {
+                ret = func->func(eval_argc, eval_args);
+            } else if((lambda = dcast_LambdaProcedure(callee))) {
                 GCPtr eval_args[LAMBDA_MAX_ARG];
             
                 for(unsigned int i=0; i<argc; i++)
                     eval_args[i] = eval(args[i], e);
 
-                auto e_lambda = alloc_Environment(e);
+                Environment *e_lambda = alloc_Environment(e);
 
                 if(argc != (unsigned int)lambda->argc) {
                     sprintf(ex_buf, "not_implemented: wrong number of args");

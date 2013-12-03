@@ -5,18 +5,18 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "parser.hpp"
-#include "environment.hpp"
-#include "functions.hpp"
-#include "list.hpp"
-#include "show.hpp"
+#include "parser.h"
+#include "environment.h"
+#include "functions.h"
+#include "list.h"
+#include "show.h"
 
 using namespace std;
 
 void test_number_parser(int i)
 {
     string s = to_string(i);
-    auto ret = PExpr(s.c_str());
+    auto ret = PExpr(s.c_str(),0);
     EXPECT_EQ(i, dcast_Number(ret.val)->integer);
     EXPECT_EQ((int)s.length(), ret.pos);
 }
@@ -38,7 +38,7 @@ class test : public std::enable_shared_from_this<test> {};
 
 TEST(Parser, List)
 {
-    auto ret = PExpr("(1 2)");
+    auto ret = PExpr("(1 2)", 0);
 
     GCPtr dat = ret.val;
     auto dat_as_pair = dcast_Pair(dat);
@@ -50,14 +50,14 @@ TEST(Parser, List)
 
 TEST(List, make_list)
 {
-    EXPECT_EQ(string(show(make_list(parse("2"), parse("(3 3)")))), string("(2 (3 3))"));
+    //EXPECT_EQ(string(show(cons(ucast(parse("2")), parse("(3 3)")))), string("(2 (3 3))"));
 }
 
 void test_parse(const char *s, const char *t)
 {
-    auto ret = PExpr(t);
+    auto ret = PExpr(t,0);
     auto dat = move(ret.val);
-    //EXPECT_EQ(string(s), string(show(dat)));
+    EXPECT_EQ(string(s), string(show(dat)));
 }
 
 void test_parse(const char *s)

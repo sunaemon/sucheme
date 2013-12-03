@@ -5,14 +5,14 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "parser.hpp"
-#include "environment.hpp"
-#include "functions.hpp"
-#include "list.hpp"
-#include "eval.hpp"
-#include "show.hpp"
-#include "gc.hpp"
-#include "intern.hpp"
+#include "parser.h"
+#include "environment.h"
+#include "functions.h"
+#include "list.h"
+#include "eval.h"
+#include "show.h"
+#include "gc.h"
+#include "intern.h"
 
 using namespace std;
 
@@ -55,14 +55,14 @@ TEST_F(EvalTest, Cond)
 
 TEST_F(EvalTest, Rec)
 {
-    run_gc(e);
+    run_gc(&e);
     eval(parse("(define f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x)))))"), e);
     EVAL_TEST("3628800", "(f 10)");
     eval(parse("(define f (lambda (x) (cond ((= 0 x) 1) ((= 1 x) 1) (#t (+ (f (- x 1)) (f (- x 2)))))))"), e);
     EVAL_TEST("10946", "(f 20)");
     EVAL_TEST("121393", "(f 25)");
     //EVAL_TEST("121393", "(f 30)");
-    run_gc(e);
+    run_gc(&e);
 }
 
 TEST_F(EvalTest, functions)

@@ -4,11 +4,11 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "gc.hpp"
+#include "gc.h"
 #include <climits>
-#include "functions.hpp"
-#include "parser.hpp"
-#include "eval.hpp"
+#include "functions.h"
+#include "parser.h"
+#include "eval.h"
 
 using namespace std;
 
@@ -44,14 +44,14 @@ using std::string;
 TEST(GC, Test2)
 {
     Environment *nullenv = nullptr;
-    run_gc(nullenv);
+    run_gc(&nullenv);
 
     auto e = alloc_Environment(nullptr);
-    env_intern_define(e, "car", ucast(alloc_Procedure(car)));
+    env_intern_define(e, "car", ucast(alloc_Procedure(fun_car)));
 
     eval(parse("(define caar (lambda (x) (car (car x))))"),e);
 
-    run_gc(e);
+    run_gc(&e);
 
     memset(mem[1-memory_in_used], 0, memsize);
 

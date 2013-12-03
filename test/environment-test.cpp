@@ -2,12 +2,18 @@
 
 #include <iostream>
 
-#include "parser.hpp"
-#include "environment.hpp"
-#include "gc.hpp"
-#include "intern.hpp"
+#include "parser.h"
+#include "environment.h"
+#include "gc.h"
+#include "intern.h"
 
 using namespace std;
+
+stringstream ost;
+
+static void callback(int id, const GCPtr l) {
+    ost << extern_symbol(id) << " = " << show(l) << endl;
+}
 
 TEST(Environment_test, test1)
 {
@@ -21,10 +27,8 @@ TEST(Environment_test, test1)
     env_intern_define(e, "h", parse("7"));
     env_intern_define(e, "a", parse("8"));
     env_intern_define(e, "i", parse("9"));
-    stringstream ost;
-    env_foreach([&](int id, const GCPtr l){
-            ost << extern_symbol(id) << " = " << show(l) << endl;
-        }, e);
+    
+    env_foreach(callback,e);
     EXPECT_EQ("a = 8\nb = 6\nd = 2\nf = 3\nc = 4\ng = 5\nh = 7\ni = 9\n", ost.str());
     //EXPECT_EQ("a = 8\nb = 6\nc = 4\nd = 2\nf = 3\ng = 5\nh = 7\ni = 9\n",ost.str());
 }

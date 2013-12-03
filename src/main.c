@@ -1,13 +1,11 @@
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "parser.hpp"
-#include "eval.hpp"
-#include "functions.hpp"
-#include "gc.hpp"
+#include "parser.h"
+#include "eval.h"
+#include "functions.h"
+#include "gc.h"
 
-using namespace std;
-
-int main(int, char**)
+int main(int argc, char**argv)
 {
     char *command;
 
@@ -16,7 +14,7 @@ int main(int, char**)
 
     init_gc();
 
-    Environment *e = alloc_Environment(nullptr);
+    Environment *e = alloc_Environment(NULL);
     init_environment(e);
 
     while((command = readline(">> "))) {

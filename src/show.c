@@ -1,11 +1,18 @@
-#include "parser.hpp"
-#include "environment.hpp"
-#include "gc.hpp"
-#include "gc_objects.hpp"
+#include "parser.h"
+#include "environment.h"
+#include "gc.h"
+#include "gc_objects.h"
 #include <string.h>
 
 char *show(const GCPtr val)
 {
+    const Symbol *s;
+    const Number *n;
+    const Bool *b;
+    const Procedure *proc;
+    const LambdaProcedure *lambdaproc;
+    const Pair *p;
+
     char *buf;
     buf = (char*)malloc(1024);
         
@@ -13,13 +20,13 @@ char *show(const GCPtr val)
 
     if(dcast_const_Empty(val))
         sprintf(buf, "()");
-    if(auto b =dcast_const_Bool(val))
+    if((b =dcast_const_Bool(val)))
         sprintf(buf, b->value ? "#t" : "#f");
-    if(auto num =dcast_const_Number(val))
-        sprintf(buf, "%d", num->integer);
-    if(auto symbol =dcast_const_Symbol(val))
-        sprintf(buf, "%s", extern_symbol(symbol->id));
-    if(auto p =dcast_const_Pair(val)) {
+    if((n =dcast_const_Number(val)))
+        sprintf(buf, "%d", n->integer);
+    if((s =dcast_const_Symbol(val)))
+        sprintf(buf, "%s", extern_symbol(s->id));
+    if((p = dcast_const_Pair(val))) {
         const Pair *next=p;
 
         strcat(buf, "(");
@@ -50,10 +57,10 @@ char *show(const GCPtr val)
             throw_jump();
         }
     }
-    if(auto proc =dcast_const_Procedure(val)) {
+    if((proc =dcast_const_Procedure(val))) {
         sprintf(buf ,"<Procedure 0x%lx >", (unsigned long)proc->func);
     }
-    if(auto lambdaproc =dcast_const_LambdaProcedure(val)) {
+    if((lambdaproc =dcast_const_LambdaProcedure(val))) {
         strcat(buf, "<Lambda Procedure (lambda (");
         for(int i=0; i< lambdaproc->argc; i++) {
             strcat(buf, extern_symbol(lambdaproc->argv[i]));

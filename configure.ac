@@ -3,7 +3,7 @@ AC_PREREQ([2.68])
 AC_INIT([sunaemon_scheme], [0.1.0], [@sunaemon0])
 AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
-AC_CONFIG_SRCDIR([src/main.cpp])
+AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([src/config.h])
 
 # Checks for programs.

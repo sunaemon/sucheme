@@ -1,7 +1,12 @@
 #pragma once
-#include "exceptions.hpp"
-#include "generic_functions.hpp"
 #include <stdint.h>
+#include <wchar.h>
+#include <stdbool.h>
+#include "exceptions.h"
+#include "generic_functions.h"
+#include "macro.h"
+
+IF_CPP(extern "C" {)
 
 inline bool white_space(wchar_t c) {
     return c==' ' || c == '\n';
@@ -38,19 +43,21 @@ inline bool subsequent(wchar_t c) {
     return initial(c) || digit(c) || str_in(special_subsequent, c);
 }
 
-struct parse_result
+typedef struct
 {
     GCPtr val;
     int pos;
-};
+} parse_result;
     
-struct parse_int_result
+typedef struct
 {
     int64_t val;
     int pos;
-};
+} parse_int_result;
 
 parse_int_result parse_int(const char *s, int p);
-parse_result PExpr(const char *s, int32_t p = 0);
-GCPtr parse(const char *s, unsigned int length);
+parse_result PExpr(const char *s, int32_t p);
+GCPtr parse_len(const char *s, unsigned int length);
 GCPtr parse(const char *s);
+
+IF_CPP(})

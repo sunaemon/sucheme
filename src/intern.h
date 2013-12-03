@@ -1,4 +1,7 @@
 #pragma once
+#include "macro.h"
+
+IF_CPP(extern "C" {)
 
 enum {
     ID_LAMBDA,
@@ -14,3 +17,5 @@ enum {
 
 int intern_symbol(const char *name);
 const char *extern_symbol(int id);
+
+IF_CPP(})
