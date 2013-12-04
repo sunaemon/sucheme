@@ -35,74 +35,57 @@ GCPtr eval(GCPtr a, Environment *e) {
         Symbol *f = dcast_Symbol(p->car);
 
         if(f && f->id == ID_LAMBDA) {
-            if(argc != 2) {
-                sprintf(ex_buf, "malformed_lambda argsize: expected 2 get %d", argc);
-                longjmp(ex_jbuf,0);
-            }
+            if(argc != 2)
+                throw_jumpf("malformed_lambda argsize: expected 2 get %d", argc);
 
             GCPtr body = args[1];
             LambdaProcedure *lp = alloc_LambdaProcedure(body, e);
             int i=0;
-            {
-                Pair *l_ = dcast_ex_Pair(args[0]);
-                Pair *ll_;
-                
-                for(;;){
-                    if(i<LAMBDA_MAX_ARG)
-                        lp->argv[i++] = dcast_ex_Symbol(l_->car)->id;
-                    else {
-                        sprintf(ex_buf, "too_many_argument");
-                        throw_jump();
-                    }
 
-                    ll_ = dcast_Pair(l_->cdr);
-                    if(!ll_) break;
-                    l_ = ll_;
-                }
+            Pair *next = dcast_ex_Pair(args[0]);
+            for(; i<LAMBDA_MAX_ARG; i++) {
+                lp->argv[i++] = dcast_ex_Symbol(next->car)->id;
                 
-                if(!dcast_Empty(l_->cdr)) {
-                    sprintf(ex_buf, "improper_list");
-                    throw_jump();
-                }
+                Pair *tmp;
+                if(!(tmp = dcast_Pair(next->cdr)))
+                    break;
+                next = tmp;
             }
+
+            if(i==LAMBDA_MAX_ARG)
+                throw_jumpf("too_many_argument");
+            
+            if(!dcast_Empty(next->cdr))
+                throw_jumpf("improper_list");
+
             lp->argc = i;
             ret = ucast(lp);
         } else if(f && f->id == ID_COND) {
+            ret = (GCPtr)nil();
+
             for(unsigned int i=0; i<argc; i++) {
                 GCPtr values[LAMBDA_MAX_ARG];
                 unsigned int values_size = ListToArray(values, dcast_ex_Pair(args[i]));
 
-                if(values_size != 2) {
-                    sprintf(ex_buf, "malformed_cond");
-                    throw_jump();
-                }
-
-                Symbol *s_val = dcast_Symbol(values[0]);
+                if(values_size != 2)
+                    throw_jumpf("malformed_cond");
 
                 Bool *b_val;
 
-                if(s_val && s_val->id == ID_ELSE)
-                    ret = eval(values[1], e);
-                else if((b_val = dcast_Bool(eval(values[0],e))))
+                if((b_val = dcast_Bool(eval(values[0],e))))
                     if(b_val->value) {
                         ret = eval(values[1], e);
                         goto end;
                     }
             }
-            sprintf(ex_buf, "not_implemented");
-            throw_jump();
         } else if(f && f->id == ID_QUOTE) {
-            if(argc != 1) {
-                sprintf(ex_buf, "malformed_quote");
-                throw_jump();
-            }
+            if(argc != 1)
+                throw_jumpf("malformed_quote");
 
             ret = args[0];
         } else if(f && f->id == ID_DEFINE) {
-            if(argc != 2) {
-                sprintf(ex_buf,"not_implemented");
-                throw_jump();
-            }
+            if(argc != 2)
+                throw_jumpf("malformed_define");
 
             Symbol *symbol;
 
@@ -110,14 +93,12 @@ GCPtr eval(GCPtr a, Environment *e) {
                 env_define(e, symbol->id, eval(args[1],e));
                 ret = ucast(symbol);
             } else {
-                sprintf(ex_buf, "malformed_define");
-                throw_jump();
+                throw_jumpf("not_implemented");
             }
         } else if(f && f->id == ID_SET) {
-            if(argc != 2) {
-                sprintf(ex_buf, "malformed_set:args expected 2 but get %d" ,argc);
-                throw_jump();
-            }
+            if(argc != 2)
+                throw_jumpf("malformed_set:args expected 2 but get %d" ,argc);
+
             env_set(e, dcast_ex_Symbol(args[0])->id, eval(args[1], e));
             ret = ucast(nil());
         } else if(f && f->id == ID_BEGIN) {
@@ -132,9 +113,8 @@ GCPtr eval(GCPtr a, Environment *e) {
 
                 int eval_argc=0;
 
-                for(unsigned int i=0; i<argc; i++) {
+                for(unsigned int i=0; i<argc; i++)
                     eval_args[eval_argc++] = eval(args[i], e);
-                }
 
                 ret = func->func(eval_argc, eval_args);
             } else if((lambda = dcast_LambdaProcedure(callee))) {
@@ -145,14 +125,11 @@ GCPtr eval(GCPtr a, Environment *e) {
 
                 Environment *e_lambda = alloc_Environment(e);
 
-                if(argc != (unsigned int)lambda->argc) {
-                    sprintf(ex_buf, "not_implemented: wrong number of args");
-                    throw_jump();
-                }
+                if(argc != (unsigned int)lambda->argc)
+                    throw_jumpf("not_implemented: wrong number of args");
                 
-                for(unsigned int i=0; i<argc; i++) {
+                for(unsigned int i=0; i<argc; i++)
                     env_define(e_lambda, lambda->argv[i], eval_args[i]);
-                }
                 
                 ret = eval(ucast(lambda->body), e_lambda);
             } else {
@@ -165,9 +142,10 @@ GCPtr eval(GCPtr a, Environment *e) {
             }
         }
     end:
-        //cerr << "<" << show(a) << " "<< show(ret) << endl << endl;
+#ifdef EVAL_DEBUG
+        cerr << "<" << show(a) << " "<< show(ret) << endl << endl;
+#endif
         return ret;
     }
-    sprintf(ex_buf, "not_implemented:%d", a->tag);
-    throw_jump();
+    throw_jumpf("not_implemented:%s", tag_name[a->tag]);
 }

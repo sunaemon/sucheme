@@ -33,22 +33,16 @@ parse_result PExpr(const char *s, int32_t p)
             p++;
             if(delimiter(s[p]))
                 return make_parse_result(ucast(alloc_Bool(true)), p);
-            else {
-                sprintf(ex_buf, "unsupported_grammer");
-                longjmp(ex_jbuf,0);
-            }
+            else
+                throw_jumpf("unsupported_grammer");
         } else if(s[p] == 'f') {
             p++;
             if(delimiter(s[p]))
                 return make_parse_result(ucast(alloc_Bool(false)), p);
-            else {
-                sprintf(ex_buf, "unsupported_grammer");
-                longjmp(ex_jbuf,0);
-            }
-        } else {
-            sprintf(ex_buf, "unsupported_grammer");
-            longjmp(ex_jbuf,0);
-        }
+            else
+                throw_jumpf("unsupported_grammer");
+        } else
+            throw_jumpf("unsupported_grammer");
     }else if(s[p] == '-' || s[p] == '+') {
         if(delimiter(s[p+1])) {
             if(s[p] == '+') {
@@ -74,10 +68,8 @@ parse_result PExpr(const char *s, int32_t p)
         p = res.pos;
         if(delimiter(s[p]))
             return make_parse_result(ucast(alloc_Number(sig?ret:-ret)), p);
-        else {
-            sprintf(ex_buf, "unsupported_grammer");
-            longjmp(ex_jbuf,0);
-        }
+        else
+            throw_jumpf("unsupported_grammer");
     }
     
     if(digit(s[p])) {
@@ -87,10 +79,8 @@ parse_result PExpr(const char *s, int32_t p)
         p = res.pos;
         if(delimiter(s[p]))
             return make_parse_result(ucast(alloc_Number(ret)), p);
-        else {
-            sprintf(ex_buf, "unsupported_grammer");
-            longjmp(ex_jbuf,0);
-        }
+        else
+            throw_jumpf("unsupported_grammer");
     }
 
     if(s[p] == '(') {
@@ -139,17 +129,14 @@ parse_result PExpr(const char *s, int32_t p)
             memcpy(buf, s+start, p-start);
             buf[p-start] = 0;
             return make_parse_result(ucast(make_symbol(buf)), p);
-        } else {
-            sprintf(ex_buf, "unsupported_grammer");
-            longjmp(ex_jbuf,0);
-        }
+        } else
+            throw_jumpf("unsupported_grammer");
     }
 
-    if(s[p])
-        sprintf(ex_buf, "unsupported_grammer:cannot understand %c at %d in %s", s[p], p, s);
-    else {
-        sprintf(ex_buf, "unsupported_grammer:unexpected eof at %d in %s", p, s);
-        longjmp(ex_jbuf,0);
+    if(s[p]) {
+        throw_jumpf("unsupported_grammer:cannot understand %c at %d in %s", s[p], p, s);
+    } else {
+        throw_jumpf("unsupported_grammer:unexpected eof at %d in %s", p, s);
     }
 }
 

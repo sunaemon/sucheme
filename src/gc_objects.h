@@ -19,11 +19,14 @@ enum GCObject_tag{
     TAG_Procedure,
     TAG_Pair,
     TAG_LambdaProcedure,
+    NUMBER_OF_TAG,
 };
+
+extern const char tag_name[NUMBER_OF_TAG][30];
 
 struct GCObject_
 {
-    char tag;
+    unsigned char tag;
     struct GCObject_ *whereis;
 };
 
@@ -208,14 +211,13 @@ char *show(const GCPtr val);
 #define dcast_ex_spec(T0)                                               \
     inline T0* dcast_ex_##T0(GCPtr a)                                   \
     {                                                                   \
-        T0 *ret = dcast_##T0(a);                                       \
+        T0 *ret = dcast_##T0(a);                                        \
         if(ret)                                                         \
             return ret;                                                 \
         else {                                                          \
             char *buf = show(a);                                        \
-            sprintf(ex_buf, "bad_cast: tried to convert %d to %s, value: %s", a->tag, #T0,buf); \
+            throw_jumpf("bad_cast: tried to convert %s to %s, value: %s", tag_name[(int)a->tag], #T0,buf);     \
             free(buf);                                                  \
-            throw_jump();                                               \
         }                                                               \
     }                                                                   \
 
@@ -224,3 +226,4 @@ define_for_all(dcast_ex_spec)
 #define ucast(a) ((GCPtr)(a))
 
 IF_CPP(})
+

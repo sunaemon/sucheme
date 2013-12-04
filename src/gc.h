@@ -5,7 +5,7 @@
 
 IF_CPP(extern "C" {)
 
-#define memsize 100000000
+#define memsize 1000000000
 
 extern char *mem[2];
 extern char *scaned;
@@ -22,14 +22,12 @@ int rpos_active_mem(void *ptr);
 unsigned long allocated_memory();
 
 #define alloc_spec(T, a, p)                                             \
-    inline T* alloc_##T p                                              \
+    inline T* alloc_##T p                                               \
     {                                                                   \
-        if((unsigned long)(memsize - (unscaned - mem[memory_in_used])) < sizeof(T)) { \
-            sprintf(ex_buf, "no memory. please run gc");                \
-            throw_jump();                                               \
-        }                                                               \
-        T *ret = (T*)unscaned;                                      \
-        init_##T a;                                               \
+        if((unsigned long)(memsize - (unscaned - mem[memory_in_used])) < sizeof(T)) \
+            throw_jumpf("no memory. please run gc");                   \
+        T *ret = (T*)unscaned;                                          \
+        init_##T a;                                                     \
         ret->obj.whereis = ucast(ret);                                  \
         unscaned+=sizeof(T);                                            \
         return ret;                                                     \

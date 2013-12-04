@@ -1,12 +1,12 @@
 AC_PREREQ([2.69])
 AC_INIT([sunaemon_scheme], [0.1.0], [@sunaemon0])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
 # Checks for programs.
-LT_INIT
 AC_PROG_CXX
 AC_PROG_AWK
 AC_PROG_CC
@@ -14,7 +14,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
+LT_INIT
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [main])

@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I.
-AM_CFLAGS   = -O2
-AM_CXXFLAGS = -W -Wall -std=c++0x -lpthread -DGTEST_HAS_PTHREAD=1 -pg
+AM_CFLAGS   = -O2 -W -Wall 
+AM_CXXFLAGS = -O2 -W -Wall -std=c++0x -DGTEST_HAS_PTHREAD=1
 
 TESTS = test-sucheme
 TESTS_ENVIRONMENT = GTEST_SOURCE_DIR="$(srcdir)/test" \

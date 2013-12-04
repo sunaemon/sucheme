@@ -16,7 +16,7 @@ void init_environment(Environment *e)
     env_intern_define(e, "print", ucast(alloc_Procedure(fun_print)));
     env_intern_define(e, "null?", ucast(alloc_Procedure(fun_null_is)));
     env_intern_define(e, "else", ucast(alloc_Bool(true)));
-        
+
     eval(parse("(define cadr (lambda (x) (car (cdr x))))"),e);
     eval(parse("(define cdar (lambda (x) (cdr (car x))))"),e);
     eval(parse("(define caar (lambda (x) (car (car x))))"),e);

@@ -56,15 +56,15 @@ GCPtr copy(GCPtr val) {
 
     if(!have_to_copy(val))
         return val;
-    
-    //cerr << "whereis:" << memory_location(val->whereis) << " " << memory_location(val) << endl;
-
+#ifdef GC_DEBUG
+    cerr << "whereis:" << memory_location(val->whereis) << " " << memory_location(val) << endl;
+#endif
     if(val->whereis != val)
         return val->whereis;
 
-    if((b = dcast_Bool(val))) {
+    if((b = dcast_Bool(val)))
         return val->whereis = ucast(alloc_Bool(b->value));
-    } else if((n = dcast_Number(val)))
+    else if((n = dcast_Number(val)))
         return val->whereis = ucast(alloc_Number(n->integer));
     else if((s = dcast_Symbol(val)))
         return val->whereis = ucast(alloc_Symbol(s->id));
@@ -90,8 +90,7 @@ GCPtr copy(GCPtr val) {
         new_a->l = a->l;
         return val->whereis = ucast(new_a);
     } else {
-        sprintf(ex_buf, "not_implemented");
-        longjmp(ex_jbuf,0);
+        throw_jumpf("not_implemented");
     }
 }
 
@@ -103,26 +102,34 @@ unsigned long allocated_memory()
    
 void run_gc(Environment **e)
 {
-    //unsigned long beforesize = unscaned - mem[memory_in_used];
+#ifdef GC_DEBUG
+    unsigned long beforesize = unscaned - mem[memory_in_used];
+#endif
     memory_in_used = 1-memory_in_used;
     scaned = unscaned = mem[memory_in_used];
     
     //fprintf(stderr, "rungc called\n");
     
     if(!*e) {
-        //fprintf(stderr, "run_gc called. memory usage: %ld -> 0\n", beforesize);
+#ifdef GC_DEBUG
+        fprintf(stderr, "run_gc called. memory usage: %ld -> 0\n", beforesize);
+#endif
         return;
     }
         
     *e = (Environment*)copy(ucast(*e));
         
     while(scaned < unscaned) {
-        //fprintf(stderr, "%d\n", scaned - mem[0]);
-        //fprintf(stderr, "%d\n", unscaned - mem[0]);
+#ifdef GC_DEBUG
+        fprintf(stderr, "%d\n", scaned - mem[0]);
+        fprintf(stderr, "%d\n", unscaned - mem[0]);
+#endif
             
         GCPtr val = ucast(scaned);
 
-        //fprintf(stderr, "\n%d\n", rpos_active_mem(val));
+#ifdef GC_DEBUG
+        fprintf(stderr, "\n%d\n", rpos_active_mem(val));
+#endif
         //cerr << endl << rpos_active_mem(val)  << endl << showptr(val);
         Pair *p;
         Environment *e;
@@ -161,13 +168,16 @@ void run_gc(Environment **e)
             scaned += sizeof(EnvironmentMap);
         }
         else {
-            sprintf(ex_buf, "not_implemented");
-            longjmp(ex_jbuf,0);
+            throw_jumpf("not_implemented");
         }
-        //fprintf(stderr, "end %d\n", rpos_active_mem(val));
+#ifdef GC_DEBUG        
+        fprintf(stderr, "end %d\n", rpos_active_mem(val));
+#endif
     }
 
-    //unsigned long aftersize = unscaned - mem[memory_in_used];
+#ifdef GC_DEBUG        
+    unsigned long aftersize = unscaned - mem[memory_in_used];
         
-    //fprintf(stderr, "run_gc called, memory usage: %ld -> %ld\n", beforesize, aftersize);
+    fprintf(stderr, "run_gc called, memory usage: %ld -> %ld\n", beforesize, aftersize);
+#endif
 }

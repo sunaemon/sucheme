@@ -51,17 +51,18 @@ TEST_F(EvalTest, Cond)
     EVAL_TEST("1", "(cond (#t 1))");
     EVAL_TEST("2", "(cond (#f 1) (#t 2) (#f 1))");
     EVAL_TEST("4", "(cond (#f 1) (#f 2) (#t 4))");
+    EVAL_TEST("()", "(cond (#f 1) (#f 2) (#f 4))");
 }
 
 TEST_F(EvalTest, Rec)
 {
     run_gc(&e);
-    eval(parse("(define f (lambda (x) (cond ((= 0 x) 1)(#t (* (f (- x 1)) x)))))"), e);
+    eval(parse("(define f (lambda (x) (cond ((= 0 x) 1)(else (* (f (- x 1)) x)))))"), e);
     EVAL_TEST("3628800", "(f 10)");
-    eval(parse("(define f (lambda (x) (cond ((= 0 x) 1) ((= 1 x) 1) (#t (+ (f (- x 1)) (f (- x 2)))))))"), e);
+    eval(parse("(define f (lambda (x) (cond ((= 0 x) 1) ((= 1 x) 1) (else (+ (f (- x 1)) (f (- x 2)))))))"), e);
     EVAL_TEST("10946", "(f 20)");
     EVAL_TEST("121393", "(f 25)");
-    //EVAL_TEST("121393", "(f 30)");
+    //EVAL_TEST("1346269", "(f 30)");
     run_gc(&e);
 }
 
